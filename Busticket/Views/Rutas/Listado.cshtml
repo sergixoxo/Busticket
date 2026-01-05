@@ -1,0 +1,185 @@
+@model List<Busticket.Models.Ruta>
+
+@{
+    ViewBag.Title = "Rutas disponibles";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+    <style>
+        @@keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-up {
+            animation: fadeUp .6s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body class="bg-[#f7f8fa] text-gray-800">
+
+    <!-- ================= HEADER ================= -->
+    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-10 py-6 flex justify-between items-center">
+            <a href="/Home/Index"
+               class="text-sm tracking-[0.35em] uppercase font-light text-gray-900">
+                Busticket
+            </a>
+
+     
+        </div>
+    </header>
+
+    <!-- ================= CONTENIDO ================= -->
+    <main class="max-w-7xl mx-auto px-8 py-12 grid grid-cols-[280px_1fr_360px] gap-10">
+
+        <!-- ========== FILTROS ========== -->
+        <aside class="fade-up sticky top-28">
+            <div class="bg-white/80 backdrop-blur rounded-2xl p-6 shadow-sm">
+                <h2 class="text-xs uppercase tracking-widest text-gray-500 mb-6">
+                    Filtros
+                </h2>
+
+                <form method="get" action="/Rutas/Listado" class="space-y-5">
+
+                    <div>
+                        <label class="text-xs uppercase text-gray-400">Desde</label>
+                        <select name="origen"
+                                class="mt-1 w-full rounded-lg border-gray-200 text-sm">
+                            <option value="">Todas</option>
+                            @foreach (var c in Model.Select(r => r.CiudadOrigen).Distinct())
+                            {
+                                <option value="@c.Nombre">@c.Nombre</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-xs uppercase text-gray-400">Hasta</label>
+                        <select name="destino"
+                                class="mt-1 w-full rounded-lg border-gray-200 text-sm">
+                            <option value="">Todas</option>
+                            @foreach (var c in Model.Select(r => r.CiudadDestino).Distinct())
+                            {
+                                <option value="@c.Nombre">@c.Nombre</option>
+                            }
+                        </select>
+                    </div>
+
+                    <button class="w-full mt-4 py-2 rounded-full bg-gray-900 text-white text-sm
+                               hover:bg-black transition">
+                        Aplicar filtros
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- ========== LISTADO DE RUTAS ========== -->
+        <section class="fade-up">
+
+            <h3 class="text-xs uppercase tracking-widest text-gray-500 mb-6">
+                @Model.Count rutas disponibles
+            </h3>
+
+            <div class="flex flex-col gap-6 h-[75vh] overflow-y-auto pr-2">
+
+                @foreach (var ruta in Model)
+                {
+                    <article class="group bg-white rounded-2xl p-5 shadow-sm
+                                    transition-all duration-300 hover:shadow-xl hover:-translate-y-1
+                                    cursor-pointer"
+                             data-id="@ruta.RutaId"
+                             data-origen-lat="@ruta.CiudadOrigen.Lat"
+                             data-origen-lng="@ruta.CiudadOrigen.Lng"
+                             data-destino-lat="@ruta.CiudadDestino.Lat"
+                             data-destino-lng="@ruta.CiudadDestino.Lng"
+                             onclick="location.href='/Rutas/Info/@ruta.RutaId'">
+
+                        <div class="flex gap-5 items-center">
+
+                            <img src="@(
+                                 ruta.ImagenUrl ??
+                                 $"https://picsum.photos/seed/{ruta.RutaId}/300/200"
+                                                     )"
+                                 class="w-36 h-24 rounded-xl object-cover
+                                        transition-transform duration-500 group-hover:scale-105" />
+
+                            <div class="flex-grow">
+                                <p class="font-semibold text-gray-900">
+                                    @ruta.CiudadOrigen.Nombre — @ruta.CiudadDestino.Nombre
+                                </p>
+                                <p class="text-sm text-gray-500">
+                                    @ruta.Empresa.Nombre · @ruta.DuracionMin min
+                                </p>
+                            </div>
+
+                            <div class="text-right">
+                                <p class="text-lg font-semibold text-gray-900">
+                                    $@ruta.Precio.ToString("N0")
+                                </p>
+                                <p class="text-xs text-gray-400">COP</p>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        </section>
+
+        <!-- ========== MAPA ========== -->
+        <aside class="fade-up sticky top-28">
+            <div id="map" class="w-full h-[360px] rounded-2xl shadow-sm"></div>
+        </aside>
+
+    </main>
+
+    <!-- ================= MAPA ================= -->
+    <script>
+        var map = L.map('map').setView([4.6, -74.1], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        var routingControl = null;
+
+        document.querySelectorAll('[data-id]').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                const oLat = parseFloat(card.dataset.origenLat);
+                const oLng = parseFloat(card.dataset.origenLng);
+                const dLat = parseFloat(card.dataset.destinoLat);
+                const dLng = parseFloat(card.dataset.destinoLng);
+
+                if (routingControl) map.removeControl(routingControl);
+
+                routingControl = L.Routing.control({
+                    waypoints: [L.latLng(oLat, oLng), L.latLng(dLat, dLng)],
+                    addWaypoints: false,
+                    draggableWaypoints: false,
+                    show: false
+                }).addTo(map);
+
+                map.fitBounds([[oLat, oLng], [dLat, dLng]]);
+            });
+        });
+    </script>
+
+</body>
+</html>

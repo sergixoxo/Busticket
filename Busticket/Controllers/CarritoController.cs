@@ -1,8 +1,9 @@
 ﻿using Busticket.Data;
+using Busticket.DTOs;
 using Busticket.Extensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 
 namespace Busticket.Controllers
 {
@@ -10,34 +11,23 @@ namespace Busticket.Controllers
     public class CarritoController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
 
-        public CarritoController(
-            ApplicationDbContext context,
-            UserManager<IdentityUser> userManager)
+        public CarritoController(ApplicationDbContext context)
         {
             _context = context;
-            _userManager = userManager;
         }
 
-        // DTO CORREGIDO
-        public class AgregarCarritoDto
-        {
-            public int RutaId { get; set; }
-            public List<int> Asientos { get; set; }
-        }
-
+        // ===============================
         // POST: /Carrito/Agregar
+        // 👉 NO requiere login
+        // ===============================
         [HttpPost("Agregar")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Agregar([FromBody] AgregarCarritoDto dto)
         {
             if (dto == null || dto.Asientos == null || !dto.Asientos.Any())
             {
-                return BadRequest(new
-                {
-                    mensaje = "No hay asientos seleccionados."
-                });
+                return BadRequest(new { mensaje = "No hay asientos seleccionados." });
             }
 
             var ruta = await _context.Ruta
@@ -45,25 +35,22 @@ namespace Busticket.Controllers
 
             if (ruta == null)
             {
-                return BadRequest(new
-                {
-                    mensaje = "Ruta no encontrada."
-                });
+                return BadRequest(new { mensaje = "Ruta no encontrada." });
             }
 
-            // 🛒 Obtener carrito desde sesión
             var carrito = HttpContext.Session
-                .GetObjectFromJson<List<int>>("Carrito") ?? new List<int>();
+                .GetObjectFromJson<List<CarritoItem>>("Carrito")
+                ?? new List<CarritoItem>();
 
-            foreach (var asientoId in dto.Asientos)
+            foreach (var asiento in dto.Asientos)
             {
-                if (!carrito.Contains(asientoId))
+                if (!carrito.Any(a => a.AsientoId == asiento.AsientoId))
                 {
-                    carrito.Add(asientoId);
+                    carrito.Add(asiento);
                 }
             }
 
-            var total = carrito.Count * ruta.Precio;
+            var total = carrito.Sum(a => a.Precio);
 
             HttpContext.Session.SetObjectAsJson("Carrito", carrito);
             HttpContext.Session.SetString("Total", total.ToString());
@@ -71,9 +58,25 @@ namespace Busticket.Controllers
             return Ok(new
             {
                 mensaje = "Asientos agregados al carrito",
-                asientos = carrito,
-                total
+                total,
+                cantidad = carrito.Count
             });
+        }
+
+        // ===============================
+        // GET: /Carrito
+        // 👉 SÍ requiere login
+        // ===============================
+        [Authorize]
+        [HttpGet("")]
+        public IActionResult Index()
+        {
+            var carrito = HttpContext.Session
+                .GetObjectFromJson<List<CarritoItem>>("Carrito")
+                ?? new List<CarritoItem>();
+
+            ViewBag.Total = carrito.Sum(a => a.Precio);
+            return View(carrito);
         }
     }
 }

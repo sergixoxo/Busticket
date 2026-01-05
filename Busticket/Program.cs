@@ -1,82 +1,82 @@
+﻿using Microsoft.AspNetCore.StaticFiles;
 using Busticket.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ----------------------------------------------------
-// Servicios
-// ----------------------------------------------------
-
+// ===============================
+// DATABASE
+// ===============================
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
+// ===============================
+// IDENTITY (ESTO YA MANEJA COOKIES)
+// ===============================
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
-    options.Password.RequireDigit = false;
-    options.Password.RequireLowercase = false;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 6;
+    options.SignIn.RequireConfirmedAccount = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-builder.Services.AddControllersWithViews();
-
-builder.Services.AddSession(options =>
+// ===============================
+// COOKIE CONFIG (IDENTITY)
+// ===============================
+builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
+    options.LoginPath = "/Auth/Login";
+    options.AccessDeniedPath = "/Auth/Login";
+    options.SlidingExpiration = true;
 });
+
+// ===============================
+builder.Services.AddAuthorization();
+builder.Services.AddControllersWithViews();
+builder.Services.AddSession();
 
 var app = builder.Build();
 
-// ----------------------------------------------------
-// Middleware de errores
-// ----------------------------------------------------
-
+// ===============================
 if (app.Environment.IsDevelopment())
 {
-    // Solo en desarrollo
     app.UseDeveloperExceptionPage();
 }
 else
 {
-    // Solo en producción
     app.UseExceptionHandler("/Error/Error500");
-    app.UseStatusCodePagesWithReExecute("/Error/HttpStatus", "?code={0}");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
 
+// ===============================
+// STATIC FILES
+// ===============================
+var provider = new FileExtensionContentTypeProvider();
+provider.Mappings[".glb"] = "model/gltf-binary";
+provider.Mappings[".json"] = "application/json";
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    ContentTypeProvider = provider,
+    ServeUnknownFileTypes = true
+});
+
+// ===============================
+// PIPELINE (ORDEN CORRECTO)
+// ===============================
 app.UseRouting();
-
 app.UseSession();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ----------------------------------------------------
-// Rutas
-// ----------------------------------------------------
-
+// ===============================
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Auth}/{action=Login}/{id?}"
+    pattern: "{controller=Home}/{action=Index}/{id?}"
 );
-
-// ----------------------------------------------------
-// Seed
-// ----------------------------------------------------
-
-using (var scope = app.Services.CreateScope())
-{
-    await IdentitySeeder.SeedRolesAndAdmin(scope.ServiceProvider);
-}
 
 app.Run();

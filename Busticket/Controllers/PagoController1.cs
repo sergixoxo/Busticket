@@ -1,34 +1,15 @@
 ﻿using Busticket.Data;
+using Busticket.DTOs;
+using Busticket.Extensions;
 using Busticket.Models;
-using iText.Barcodes;
-using iText.IO.Font.Constants;
-using iText.IO.Font.Constants;
-using iText.Kernel.Colors;
-using iText.Kernel.Font;
-using iText.Kernel.Font;
-using iText.Kernel.Geom;
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Draw;
-using iText.Layout;
-using iText.Layout;
-using iText.Layout.Element;
-using iText.Layout.Element;
-using iText.Layout.Properties;
-using iText.Layout.Properties;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-
-
 
 namespace Busticket.Controllers
 {
+    [Authorize]
     public class PagoController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -39,56 +20,46 @@ namespace Busticket.Controllers
         }
 
         // =========================
-        // GET: /Pago/Index
+        // GET: /Pago
         // =========================
         public IActionResult Index()
         {
-            var carritoJson = HttpContext.Session.GetString("Carrito");
-            var totalString = HttpContext.Session.GetString("Total");
+            var carrito = HttpContext.Session
+      .GetObjectFromJson<List<CarritoItem>>("Carrito")
+      ?? new List<CarritoItem>();
 
-            var asientos = string.IsNullOrEmpty(carritoJson)
-                ? new List<string>()
-                : JsonConvert.DeserializeObject<List<string>>(carritoJson);
+            if (!carrito.Any())
+                return RedirectToAction("Index", "Home");
 
-            var total = decimal.TryParse(totalString, out var t) ? t : 0;
+            var total = carrito.Sum(c => c.Precio);
 
-            string origen = "", destino = "", empresa = "", duracion = "", fecha = "", hora = "";
-            int rutaId = 0;
+            var primerAsiento = _context.Asiento
+                .Include(a => a.Ruta).ThenInclude(r => r.CiudadOrigen)
+                .Include(a => a.Ruta).ThenInclude(r => r.CiudadDestino)
+                .Include(a => a.Ruta).ThenInclude(r => r.Empresa)
+                .FirstOrDefault(a => a.AsientoId == carrito.First().AsientoId);
 
-            if (asientos.Any() && int.TryParse(asientos[0], out int numeroAsiento))
-            {
-                var asiento = _context.Asiento
-                    .Include(a => a.Ruta).ThenInclude(r => r.CiudadOrigen)
-                    .Include(a => a.Ruta).ThenInclude(r => r.CiudadDestino)
-                    .Include(a => a.Ruta).ThenInclude(r => r.Empresa)
-                    .FirstOrDefault(a => a.Numero == numeroAsiento);
-
-                if (asiento != null)
-                {
-                    rutaId = asiento.RutaId;
-                    origen = asiento.Ruta.CiudadOrigen.Nombre;
-                    destino = asiento.Ruta.CiudadDestino.Nombre;
-                    empresa = asiento.Ruta.Empresa.Nombre;
-                    duracion = asiento.Ruta.DuracionMin + " min";
-                    fecha = DateTime.Now.ToString("dd/MM/yyyy");
-                    hora = "00:00";
-                }
-            }
+            if (primerAsiento == null)
+                return RedirectToAction("Index", "Home");
 
             return View(new PagoViewModel
             {
-                RutaId = rutaId,
-                Asientos = asientos,
+                RutaId = primerAsiento.RutaId,
+                Asientos = carrito.Select(c => c.AsientoId.ToString()).ToList(),
                 Total = total,
-                Origen = origen,
-                Destino = destino,
-                Empresa = empresa,
-                Duracion = duracion,
-                Fecha = fecha,
-                Hora = hora
+                Origen = primerAsiento.Ruta.CiudadOrigen.Nombre,
+                Destino = primerAsiento.Ruta.CiudadDestino.Nombre,
+                Empresa = primerAsiento.Ruta.Empresa.Nombre,
+                Duracion = primerAsiento.Ruta.DuracionMin + " min",
+                Fecha = DateTime.Now.ToString("dd/MM/yyyy"),
+                Hora = "00:00"
             });
+
         }
 
+        // =========================
+        // POST: /Pago/FinalizarPago
+        // =========================
         // =========================
         // POST: /Pago/FinalizarPago
         // =========================
@@ -97,27 +68,31 @@ namespace Busticket.Controllers
         [Authorize]
         public async Task<IActionResult> FinalizarPago(PagoViewModel model)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userId))
-                return RedirectToAction("Login", "Account");
-
+            // 🔹 Validaciones básicas
             if (model == null || model.Asientos == null || !model.Asientos.Any())
                 return RedirectToAction("Index");
 
             if (model.Total <= 0)
                 return RedirectToAction("Index");
 
-            var asientosInt = model.Asientos
-                .Select(s => int.TryParse(s, out var n) ? n : -1)
-                .Where(n => n != -1)
+            // 🔹 Usuario autenticado
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return RedirectToAction("Login", "Auth");
+
+            // 🔹 Convertir asientos string → int (CORRECTO)
+            var asientosIds = model.Asientos
+                .Select(a => int.TryParse(a, out int id) ? id : 0)
+                .Where(id => id > 0)
                 .ToList();
 
-            if (!asientosInt.Any())
+            if (!asientosIds.Any())
                 return RedirectToAction("Index");
 
+            // 🔹 Obtener asientos válidos y disponibles
             var asientosDb = await _context.Asiento
                 .Where(a =>
-                    asientosInt.Contains(a.Numero) &&
+                    asientosIds.Contains(a.AsientoId) &&
                     a.RutaId == model.RutaId &&
                     a.Disponible)
                 .ToListAsync();
@@ -125,22 +100,26 @@ namespace Busticket.Controllers
             if (!asientosDb.Any())
                 return RedirectToAction("Index");
 
+            // 🔹 Obtener ruta
             var ruta = await _context.Ruta.FirstOrDefaultAsync(r => r.RutaId == model.RutaId);
             if (ruta == null)
                 return RedirectToAction("Index");
 
-            // ✅ DECLARADA FUERA
-            Venta venta = null;
+            Venta venta;
 
+            // =========================
+            // 🔒 TRANSACCIÓN
+            // =========================
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
+                // 🔹 Crear venta
                 venta = new Venta
                 {
                     Fecha = DateTime.Now,
                     Total = model.Total,
-                    RutaId = model.RutaId,
+                    RutaId = ruta.RutaId,
                     EmpresaId = ruta.EmpresaId,
                     UserId = userId
                 };
@@ -148,16 +127,18 @@ namespace Busticket.Controllers
                 _context.Venta.Add(venta);
                 await _context.SaveChangesAsync();
 
+                // 🔹 Marcar asientos como NO disponibles
                 foreach (var asiento in asientosDb)
                     asiento.Disponible = false;
 
+                // 🔹 Crear boletos
                 foreach (var asiento in asientosDb)
                 {
                     _context.Boleto.Add(new Boleto
                     {
                         VentaId = venta.VentaId,
                         UserId = userId,
-                        RutaId = venta.RutaId,
+                        RutaId = ruta.RutaId,
                         AsientoId = asiento.AsientoId,
                         Precio = ruta.Precio,
                         FechaCompra = DateTime.Now,
@@ -171,34 +152,33 @@ namespace Busticket.Controllers
             catch
             {
                 await transaction.RollbackAsync();
-                throw;
+                throw; // 🔴 si hay error, lo verás claramente
             }
 
+            // 🧹 Limpiar carrito
             HttpContext.Session.Remove("Carrito");
             HttpContext.Session.Remove("Total");
 
-            // ✅ AHORA SÍ EXISTE
+            // ✅ REDIRECCIÓN CORRECTA
             return RedirectToAction(
-        "ConfirmacionPago",
-        "Pago",
-        new { ventaId = venta.VentaId }
-    );
-
+                "ConfirmacionPago",
+                "Pago",
+                new { ventaId = venta.VentaId }
+            );
         }
 
-
-      
-
-        //confirmacionpago//
+    
 
 
-        [Authorize]
+
+        // =========================
+        // GET: /Pago/ConfirmacionPago
+        // =========================
         public async Task<IActionResult> ConfirmacionPago(int ventaId)
         {
             var venta = await _context.Venta
-                .Include(v => v.Empresa)
-                .Include(v => v.Ruta)
                 .Include(v => v.Boletos)
+                .ThenInclude(b => b.Asiento)
                 .FirstOrDefaultAsync(v => v.VentaId == ventaId);
 
             if (venta == null)
@@ -210,107 +190,9 @@ namespace Busticket.Controllers
         // =========================
         // GET: /Pago/DescargarBoleto
         // =========================
-        public async Task<IActionResult> DescargarBoleto(int ventaId)
+        public IActionResult DescargarBoleto(int ventaId)
         {
-            var boletos = await _context.Boleto
-     .Include(b => b.Asiento)
-     .Include(b => b.Ruta)
-         .ThenInclude(r => r.CiudadOrigen)
-     .Include(b => b.Ruta)
-         .ThenInclude(r => r.CiudadDestino)
-     .Include(b => b.Ruta)
-         .ThenInclude(r => r.Empresa)
-     .Where(b => b.VentaId == ventaId)
-     .ToListAsync();
-
-
-            if (!boletos.Any())
-                return Content("No hay boletos");
-
-            byte[] pdfBytes;
-
-            using (var ms = new MemoryStream())
-            {
-                var writer = new PdfWriter(ms);
-                var pdf = new PdfDocument(writer);
-
-                // 👉 TAMAÑO TIPO BOLETO (vertical)
-                var pageSize = new PageSize(250, 500);
-                var doc = new Document(pdf, pageSize);
-                doc.SetMargins(20, 20, 20, 20);
-
-                var normal = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
-                var bold = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
-
-                // ===============================
-                // ENCABEZADO
-                // ===============================
-                doc.Add(new Paragraph("BUS TICKET")
-                    .SetFont(bold)
-                    .SetFontSize(16)
-                    .SetTextAlignment(TextAlignment.CENTER)
-                    .SetFontColor(ColorConstants.DARK_GRAY));
-
-                doc.Add(new Paragraph("Comprobante de viaje")
-                    .SetFontSize(10)
-                    .SetTextAlignment(TextAlignment.CENTER));
-
-                doc.Add(new LineSeparator(new SolidLine()));
-
-                foreach (var b in boletos)
-                {
-                    doc.Add(new Paragraph("RUTA")
-                        .SetFont(bold)
-                        .SetFontSize(11));
-                    doc.Add(new Paragraph(
-                        $"{b.Ruta.CiudadOrigen!.Nombre} → {b.Ruta.CiudadDestino!.Nombre}"
-                    ).SetFontSize(10));
-
-
-                    doc.Add(new Paragraph($"Asiento: {b.Asiento.Numero}")
-                        .SetFontSize(10));
-
-                    doc.Add(new Paragraph($"Código: {b.Codigo}")
-                        .SetFontSize(10));
-
-                    doc.Add(new Paragraph($"Precio: {b.Precio:N0} COP")
-                        .SetFont(bold)
-                        .SetFontSize(11));
-
-                    // ===============================
-                    // QR
-                    // ===============================
-                    var qrData = $"VENTA:{ventaId}|BOLETO:{b.Codigo}|ASIENTO:{b.Asiento.Numero}";
-                    var qr = new BarcodeQRCode(qrData);
-                    var qrImage = new Image(qr.CreateFormXObject(pdf))
-                        .SetWidth(100)
-                        .SetHorizontalAlignment(HorizontalAlignment.CENTER);
-
-                    doc.Add(new Paragraph(" "));
-                    doc.Add(qrImage);
-
-                    doc.Add(new Paragraph(" "));
-                    doc.Add(new LineSeparator(new DashedLine()));
-                }
-
-                // ===============================
-                // TOTAL
-                // ===============================
-                doc.Add(new Paragraph($"TOTAL PAGADO: {boletos.Sum(x => x.Precio):N0} COP")
-                    .SetFont(bold)
-                    .SetFontSize(12)
-                    .SetTextAlignment(TextAlignment.CENTER));
-
-                doc.Add(new Paragraph("Gracias por viajar con nosotros")
-                    .SetFontSize(9)
-                    .SetTextAlignment(TextAlignment.CENTER));
-
-                doc.Close();
-                pdfBytes = ms.ToArray();
-            }
-
-            return File(pdfBytes, "application/pdf", $"Boleto_{ventaId}.pdf");
+            return Content("Aquí va el PDF del boleto");
         }
-
     }
 }

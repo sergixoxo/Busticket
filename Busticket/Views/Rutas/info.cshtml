@@ -11,12 +11,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>Busticket</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
@@ -26,48 +24,55 @@
     </style>
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-gradient-to-br from-slate-100 via-zinc-100 to-slate-200 text-slate-800">
 
-    <!-- ================= HEADER ================= -->
-    <header class="py-6 bg-white shadow-md">
-        <div class="w-[95%] max-w-[1400px] mx-auto flex items-center justify-between">
+    <header class="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-white/40 shadow-sm">
+        <div class="w-[95%] max-w-[1400px] mx-auto py-6 flex items-center justify-between">
 
-            <div class="text-3xl font-extrabold text-[#284D67]">
-                <a href="/Home/Index">Busticket</a>
-            </div>
-
-            <nav class="flex gap-12">
-                <a href="/Planes/Index" class="hover:font-bold">Planes</a>
-                <a href="/Descuentos/Index" class="hover:font-bold">Descuentos</a>
-            </nav>
+            <a href="/Home/Index"
+               class="text-sm tracking-[0.35em] uppercase font-light text-slate-900">
+                Busticket
+            </a>
 
             <div class="relative">
                 <button id="btnCarrito">
-                    <i class="fa fa-shopping-cart text-2xl text-[#284D67]"></i>
+                    <i class="fa fa-shopping-cart text-xl text-slate-700 hover:text-black transition"></i>
                 </button>
 
                 <div id="dropdownCarrito"
-                     class="hidden absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 z-50">
+                     class="hidden absolute right-0 mt-3 w-72 bg-white/80 backdrop-blur-xl
+                        shadow-xl rounded-2xl p-5 border border-white/40 z-50">
 
-                    <h3 class="font-bold mb-2">Carrito</h3>
+                    <h3 class="text-xs tracking-widest uppercase text-slate-500 mb-3">
+                        Carrito
+                    </h3>
 
                     <ul id="listaCarrito" class="space-y-1 text-sm">
                         @{
-                            var carrito = Context.Session.GetObjectFromJson<List<string>>("Carrito") ?? new();
-                            var total = Context.Session.GetString("Total") ?? "0";
+                            var carrito = Context.Session
+                            .GetObjectFromJson<List<Busticket.DTOs.CarritoItem>>("Carrito")
+                            ?? new();
                         }
+
                         @foreach (var item in carrito)
                         {
-                            <li class="border-b pb-1">@item</li>
+                            <li class="border-b pb-1">
+                                Asiento @item.Codigo
+                            </li>
                         }
                     </ul>
 
-                    <p class="mt-2 font-semibold">
-                        Total: $<span id="totalCarrito">@total</span>
+                    <p class="mt-4 font-semibold text-right">
+                        Total:
+                        <span id="totalCarrito">
+                            @(carrito.Sum(a => a.Precio).ToString("N0"))
+                        </span> COP
                     </p>
 
                     <a href="/Pago/Index"
-                       class="block mt-3 bg-green-600 text-white text-center rounded py-1">
+                       class="block mt-4 text-center rounded-full
+                          bg-gradient-to-r from-slate-900 to-slate-700
+                          py-2 text-white text-xs tracking-widest uppercase">
                         Finalizar compra
                     </a>
                 </div>
@@ -75,118 +80,57 @@
         </div>
     </header>
 
-    <!-- ================= CONTENIDO ================= -->
-    <div class="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-10">
 
-        <!-- ===== MAPA DE SILLAS ===== -->
-        <div class="bg-white p-6 rounded-xl shadow-lg">
+    <main class="max-w-[1400px] mx-auto px-10 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
 
-            <h2 class="text-2xl font-bold mb-4">Selecciona tu silla</h2>
+        <!-- MAPA ASIENTOS -->
+        <section class="bg-white/70 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
 
-            <!-- Leyenda -->
-            <div class="flex gap-6 text-sm mb-4">
-                <div class="flex items-center gap-2">
-                    <span class="w-4 h-4 bg-white border-2 border-[#7a3e1d] rounded"></span>
-                    Disponible
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="w-4 h-4 bg-gray-300 rounded"></span>
-                    No disponible
-                </div>
+            <h2 class="text-sm tracking-widest uppercase text-slate-500 mb-6">
+                Selección de asiento
+            </h2>
+
+            <div class="grid grid-cols-5 gap-3 justify-items-center">
+
+                @foreach (var asiento in Model.Asientos)
+                {
+                    <button class="asiento w-10 h-10 rounded-md text-xs font-semibold border
+            @(asiento.Disponible
+                                        ? "bg-white border-[#c9a24d] text-[#8a6b2e]"
+                                        : "bg-slate-300 text-slate-500 cursor-not-allowed")"
+                            data-id="@asiento.AsientoId"
+                            data-codigo="@asiento.Numero"
+                            @(asiento.Disponible ? "" : "disabled")>
+
+                        @asiento.Numero
+                    </button>
+                }
+
             </div>
+        </section>
 
-            <!-- BUS -->
-            <div class="mx-auto w-[360px] bg-white border-2 border-gray-300 rounded-[3rem] p-6 shadow-inner">
+        <!-- RESUMEN -->
+        <section class="bg-white/70 backdrop-blur-xl rounded-3xl p-8 shadow-xl">
 
-                <div class="grid grid-cols-5 gap-3 justify-items-center">
-
-                    @foreach (var asiento in Model.Asientos)
-                    {
-                        bool esPasillo = asiento.Numero % 4 == 3;
-
-                        if (esPasillo)
-                        {
-                            <div class="w-6"></div>
-                        }
-
-                    <button class="asiento relative w-10 h-10 rounded-md text-xs font-bold
-                        border-2
-                        @(asiento.Disponible
-                                                        ? "bg-white border-[#7a3e1d] text-[#7a3e1d] hover:bg-[#7a3e1d] hover:text-white"
-                                                        : "bg-gray-300 border-gray-300 text-gray-500 cursor-not-allowed")
-                            transition"
-                                data-id="@asiento.AsientoId"
-                                data-codigo="@asiento.Numero"
-                                @(asiento.Disponible ? "" : "disabled")>
-
-                            @asiento.Numero
-
-                            @if (asiento.Disponible)
-                            {
-                                <div class="tooltip hidden absolute top-[-70px] left-1/2 -translate-x-1/2
-                                                bg-white border rounded-lg shadow-lg px-3 py-2 text-xs w-[150px]">
-                                    <p class="font-semibold">Silla n.º @asiento.Numero</p>
-                                    <p class="text-green-600">Disponible</p>
-                                    <p class="font-bold">
-                                        COP @Model.Ruta.Precio.ToString("N0")
-                                    </p>
-                                </div>
-                            }
-                        </button>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== DETALLE Y RESUMEN ===== -->
-        <div class="bg-white p-6 rounded-xl shadow-lg">
-
-            <h1 class="text-3xl font-bold mb-4">
-                @Model.Ruta.CiudadOrigen?.Nombre —
-                @Model.Ruta.CiudadDestino?.Nombre
-            </h1>
-
-            <p>🚍 Empresa: <b>@Model.Ruta.Empresa.Nombre</b></p>
-            <p>⏱ Duración: <b>@Model.Ruta.DuracionMin min</b></p>
-            <p>💵 Precio por asiento: <b>@Model.Ruta.Precio.ToString("N0") COP</b></p>
-
-            <h2 class="text-2xl font-bold mt-6">Resumen</h2>
-            <p class="text-lg mt-2">
+            <p class="text-lg font-semibold">
                 Total: <span id="total">0</span> COP
             </p>
 
-            <form id="formCarrito">
+            <form>
                 @Html.AntiForgeryToken()
             </form>
 
             <button id="agregarCarrito"
-                    class="mt-4 bg-[#284D67] text-white px-6 py-3 rounded-lg hover:bg-[#1f3a4d]">
+                    class="mt-6 w-full rounded-full bg-slate-900 py-3 text-white">
                 Agregar al carrito
             </button>
-        </div>
-    </div>
 
-    <!-- ================= JS ================= -->
+        </section>
+    </main>
 
     <script>
         (() => {
 
-            // ---------------- CARRITO TOGGLE ----------------
-            const btnCarrito = document.getElementById("btnCarrito");
-            const dropdownCarrito = document.getElementById("dropdownCarrito");
-
-            btnCarrito.addEventListener("click", e => {
-                e.stopPropagation();
-                dropdownCarrito.classList.toggle("hidden");
-            });
-
-            document.addEventListener("click", () => {
-                dropdownCarrito.classList.add("hidden");
-            });
-
-            dropdownCarrito.addEventListener("click", e => e.stopPropagation());
-
-            // ---------------- ASIENTOS ----------------
             let asientosSeleccionados = [];
             const precioAsiento = parseInt("@Model.Ruta.Precio");
             const formato = new Intl.NumberFormat("es-CO");
@@ -198,40 +142,39 @@
 
             document.querySelectorAll(".asiento").forEach(btn => {
                 btn.addEventListener("click", () => {
-
                     if (btn.disabled) return;
 
-                    const id = parseInt(btn.dataset.id);
+                    const asientoId = parseInt(btn.dataset.id);
                     const codigo = btn.dataset.codigo;
 
-                    const existe = asientosSeleccionados.some(a => a.id === id);
+                    const index = asientosSeleccionados.findIndex(a => a.AsientoId === asientoId);
 
-                    if (existe) {
-                        asientosSeleccionados = asientosSeleccionados.filter(a => a.id !== id);
-                        btn.classList.remove("bg-blue-600", "text-white");
-                        btn.classList.add("bg-white", "border-[#7a3e1d]", "text-[#7a3e1d]");
+                    if (index >= 0) {
+                        asientosSeleccionados.splice(index, 1);
+                        btn.classList.remove("bg-slate-900", "text-white");
+                        btn.classList.add("bg-white", "text-[#8a6b2e]");
                     } else {
-                        asientosSeleccionados.push({ id, codigo });
-                        btn.classList.remove("bg-white", "border-[#7a3e1d]", "text-[#7a3e1d]");
-                        btn.classList.add("bg-blue-600", "text-white");
+                        asientosSeleccionados.push({
+                            AsientoId: asientoId,
+                            Codigo: codigo,
+                            Precio: precioAsiento,
+                            RutaId: @Model.Ruta.RutaId
+                        });
+
+                        btn.classList.remove("bg-white", "text-[#8a6b2e]");
+                        btn.classList.add("bg-slate-900", "text-white");
                     }
 
                     actualizarTotal();
                 });
             });
 
-            // ---------------- AGREGAR AL CARRITO ----------------
             document.getElementById("agregarCarrito").addEventListener("click", async () => {
 
                 if (asientosSeleccionados.length === 0) {
                     Swal.fire("Atención", "Selecciona al menos un asiento", "warning");
                     return;
                 }
-
-                const dto = {
-                    RutaId: @Model.Ruta.RutaId,
-                    Asientos: asientosSeleccionados.map(a => a.codigo)
-                };
 
                 const token = document.querySelector(
                     'input[name="__RequestVerificationToken"]'
@@ -243,7 +186,10 @@
                         "Content-Type": "application/json",
                         "RequestVerificationToken": token
                     },
-                    body: JSON.stringify(dto)
+                    body: JSON.stringify({
+                        RutaId: @Model.Ruta.RutaId,
+                        Asientos: asientosSeleccionados
+                    })
                 });
 
                 const json = await res.json();
@@ -253,50 +199,27 @@
                     return;
                 }
 
-                // ✅ ALERTA
                 Swal.fire("Listo", json.mensaje, "success");
-
-                // ✅ TOTAL
-                document.getElementById("total").textContent =
-                    formato.format(json.total);
-
-                document.getElementById("totalCarrito").textContent =
-                    formato.format(json.total);
-
-                // ✅ LISTA CARRITO
-                const lista = document.getElementById("listaCarrito");
-                lista.innerHTML = "";
-
-                json.asientos.forEach(codigo => {
-                    const li = document.createElement("li");
-                    li.textContent = `Asiento ${codigo}`;
-                    lista.appendChild(li);
-
-                    // 🔒 BLOQUEAR ASIENTO
-                    const btn = document.querySelector(
-                        `.asiento[data-codigo='${codigo}']`
-                    );
-
-                    if (btn) {
-                        btn.disabled = true;
-                        btn.classList.remove("bg-blue-600", "text-white");
-                        btn.classList.add(
-                            "bg-gray-300",
-                            "border-gray-300",
-                            "text-gray-500",
-                            "cursor-not-allowed"
-                        );
-                    }
-                });
-
-                // ✅ LIMPIAR SELECCIÓN
                 asientosSeleccionados = [];
                 actualizarTotal();
             });
 
         })();
-    </script>
+                const btnCarrito = document.getElementById("btnCarrito");
+        const dropdownCarrito = document.getElementById("dropdownCarrito");
 
+        btnCarrito.addEventListener("click", e => {
+            e.stopPropagation();
+            dropdownCarrito.classList.toggle("hidden");
+        });
+
+        document.addEventListener("click", () => {
+            dropdownCarrito.classList.add("hidden");
+        });
+
+        dropdownCarrito.addEventListener("click", e => e.stopPropagation());
+
+    </script>
 
 </body>
 </html>

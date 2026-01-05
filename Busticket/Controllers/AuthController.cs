@@ -1,5 +1,6 @@
 ﻿using Busticket.Data;
 using Busticket.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,12 +25,14 @@ namespace Busticket.Controllers
         /* ===================== LOGIN ===================== */
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Login()
         {
             return View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Login(string email, string password)
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
@@ -59,26 +62,25 @@ namespace Busticket.Controllers
                 return View();
             }
 
-
             return RedirectToAction("Index", "Home");
         }
 
         /* ===================== REGISTER ===================== */
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult Register()
         {
             return View();
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            /* 🔹 Validaciones base */
             if (!ModelState.IsValid)
                 return View(model);
 
-            /* 🔹 Validaciones según tipo */
             if (model.TipoUsuario == "Empresa")
             {
                 if (string.IsNullOrWhiteSpace(model.NombreEmpresa))
@@ -96,7 +98,6 @@ namespace Busticket.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            /* 🔹 Verificar si el correo ya existe */
             var existingUser = await _userManager.FindByEmailAsync(model.Email);
             if (existingUser != null)
             {
@@ -104,7 +105,6 @@ namespace Busticket.Controllers
                 return View(model);
             }
 
-            /* 🔹 Crear usuario Identity */
             var user = new IdentityUser
             {
                 UserName = model.Email,
@@ -120,14 +120,9 @@ namespace Busticket.Controllers
                 return View(model);
             }
 
-            /* 🔹 Asignar rol */
-            var role = model.TipoUsuario == "Empresa"
-                ? "Empresa"
-                : "Cliente";
-
+            var role = model.TipoUsuario == "Empresa" ? "Empresa" : "Cliente";
             await _userManager.AddToRoleAsync(user, role);
 
-            /* 🔹 Crear Empresa automáticamente */
             if (model.TipoUsuario == "Empresa")
             {
                 var empresa = new Empresa
@@ -142,17 +137,14 @@ namespace Busticket.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            /* 🔹 Login automático */
             await _signInManager.SignInAsync(user, false);
-
-            /* 🔹 Redirección */
-          
 
             return RedirectToAction("Index", "Home");
         }
 
         /* ===================== LOGOUT ===================== */
 
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();

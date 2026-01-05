@@ -3,6 +3,8 @@
 @{
     ViewBag.Title = "Rutas";
     Layout = null;
+
+    var destinoSeleccionado = Context.Request.Query["destino"].ToString();
 }
 
 <!DOCTYPE html>
@@ -13,185 +15,111 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
-    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
-
-    <!-- 🎬 ANIMACIONES -->
     <style>
-        .fade-in {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 0.6s ease-out forwards;
-        }
+        @@keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
 
-        @@keyframes fadeInUp {
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
+
+        .fade-up {
+            animation: fadeUp .6s ease-out forwards;
+        }
     </style>
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-[#f7f8fa] text-gray-800">
 
     <!-- HEADER -->
-    <header class="py-6 bg-white shadow-sm fade-in">
-        <div class="max-w-[1300px] mx-auto flex items-center justify-between">
-
-            <div class="text-3xl font-extrabold text-[#284D67]">
-                <a href="/Home/Index">Busticket</a>
-            </div>
-
-            <nav class="flex gap-12">
-                <a href="/Planes/Index" class="transition hover:text-[#002C53] hover:font-bold">Planes</a>
-                <a href="/Descuentos/Index" class="transition hover:text-[#002C53] hover:font-bold">Descuentos</a>
-            </nav>
+    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-10 py-6 flex justify-between items-center">
+            <a href="/Home/Index"
+               class="text-sm tracking-[0.35em] uppercase font-light text-gray-900">
+                Busticket
+            </a>
 
         </div>
     </header>
 
-    <!-- CONTENEDOR PRINCIPAL -->
-    <div class="flex max-w-[1300px] mx-auto mt-6 gap-10">
+    <!-- CONTENIDO -->
+    <main class="max-w-7xl mx-auto px-8 py-14">
 
-        <!-- FILTROS -->
-        <aside class="w-80 bg-white shadow rounded-xl p-6 h-fit sticky top-4 fade-in">
-            <h2 class="text-xl font-bold mb-4">Filtros</h2>
+        <!-- TÍTULO DINÁMICO -->
+        <div class="text-center mb-12 fade-up">
+            @if (!string.IsNullOrEmpty(destinoSeleccionado))
+            {
+                <p class="text-xs uppercase tracking-widest text-gray-500">
+                    Rutas disponibles hacia
+                </p>
+                <h1 class="text-3xl font-semibold text-gray-900 mt-2">
+                    @destinoSeleccionado
+                </h1>
+            }
+            else
+            {
+                <h1 class="text-2xl font-semibold text-gray-900">
+                    Destinos populares
+                </h1>
+                <p class="text-sm text-gray-500 mt-1">
+                    Aquí comienza tu próxima aventura
+                </p>
+            }
+        </div>
 
-            <form method="get" action="/Rutas/Index" class="space-y-5">
-
-                <div>
-                    <label class="text-sm font-semibold text-gray-600">Desde</label>
-                    <select name="origen" class="mt-1 w-full border rounded-lg px-3 py-2">
-                        <option value="">Todas</option>
-                        @foreach (var c in Model.Select(m => m.CiudadOrigen).Distinct())
-                        {
-                            <option value="@c.Nombre">@c.Nombre</option>
-                        }
-                    </select>
-                </div>
-
-                <div>
-                    <label class="text-sm font-semibold text-gray-600">Hasta</label>
-                    <select name="destino" class="mt-1 w-full border rounded-lg px-3 py-2">
-                        <option value="">Todas</option>
-                        @foreach (var c in Model.Select(m => m.CiudadDestino).Distinct())
-                        {
-                            <option value="@c.Nombre">@c.Nombre</option>
-                        }
-                    </select>
-                </div>
-
-                <div>
-                    <label class="text-sm font-semibold text-gray-600">Empresa</label>
-                    <select name="empresa" class="mt-1 w-full border rounded-lg px-3 py-2">
-                        <option value="">Todas</option>
-                        @foreach (var e in Model.Select(m => m.Empresa).Distinct())
-                        {
-                            <option value="@e.Nombre">@e.Nombre</option>
-                        }
-                    </select>
-                </div>
-
-                <button type="submit"
-                        class="w-full bg-[#284D67] text-white py-2 rounded-lg
-                               transition hover:bg-[#1f3a4d] hover:scale-[1.02]">
-                    Aplicar filtros
-                </button>
-
-            </form>
-        </aside>
-
-        <!-- LISTADO DE RUTAS -->
-        <div class="w-[55%] bg-white rounded-xl shadow p-4 h-[85vh] overflow-y-auto fade-in">
-
-            <h3 class="text-xl font-bold mb-4">@Model.Count rutas encontradas</h3>
-
-            <div class="flex flex-col gap-4">
-
+        <!-- GRID DE DESTINOS (SOLO SI NO HAY FILTRO) -->
+        @if (string.IsNullOrEmpty(destinoSeleccionado))
+        {
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 @{
                     var index = 0;
                 }
 
-                @foreach (var ruta in Model)
+                @foreach (var grupo in Model
+                            .GroupBy(r => r.CiudadDestino)
+                            .Select(g => new
+                            {
+                                Ciudad = g.Key,
+                                PrecioMin = g.Min(r => r.Precio),
+                                RutaEjemplo = g.First()
+                            }))
                 {
-                    <div class="flex items-center justify-between p-4 bg-white
-                                    rounded-xl border shadow-sm cursor-pointer
-                                    transition-all duration-300 ease-out
-                                    hover:shadow-xl hover:-translate-y-1 hover:scale-[1.01]
-                                    fade-in"
-                         style="animation-delay:@(index * 0.05)s"
-                         data-origen-lat="@ruta.CiudadOrigen.Lat"
-                         data-origen-lng="@ruta.CiudadOrigen.Lng"
-                         data-destino-lat="@ruta.CiudadDestino.Lat"
-                         data-destino-lng="@ruta.CiudadDestino.Lng"
-                         data-id="@ruta.RutaId">
+                    <article class="group relative h-[230px] rounded-2xl overflow-hidden cursor-pointer
+                                            shadow-md hover:shadow-2xl transition-all duration-500
+                                            hover:-translate-y-1 fade-up"
+                             style="animation-delay:@(index * 0.05)s"
+                             onclick="location.href='/Rutas/Listado?destino=@grupo.Ciudad.Nombre'">
 
-                        <img src="@((ruta.ImagenUrl ?? $"https://picsum.photos/seed/{ruta.RutaId}/200/130"))"
-                             class="w-32 h-24 rounded-lg object-cover
-                                        transition-transform duration-300 hover:scale-110" />
+                        <!-- IMAGEN -->
+                        <img src="@(grupo.RutaEjemplo.ImagenUrl ??
+                                                               $"https://picsum.photos/seed/{grupo.Ciudad.Nombre}/600/400")"
+                             class="absolute inset-0 w-full h-full object-cover
+                                            transition-transform duration-700 group-hover:scale-110" />
 
-                        <div class="flex flex-col flex-grow px-4">
-                            <p class="font-bold text-lg text-gray-800">
-                                @ruta.CiudadOrigen.Nombre — @ruta.CiudadDestino.Nombre
+                        <!-- OVERLAY -->
+                        <div class="absolute inset-0 bg-gradient-to-t
+                                            from-black/75 via-black/30 to-transparent"></div>
+
+                        <!-- TEXTO -->
+                        <div class="absolute bottom-0 p-4 text-white">
+                            <p class="text-sm font-semibold tracking-wide">
+                                Viaja a @grupo.Ciudad.Nombre
                             </p>
-
-                            <p class="text-sm text-gray-500">Empresa: @ruta.Empresa.Nombre</p>
-                            <p class="text-sm text-gray-500">Duración: @ruta.DuracionMin min</p>
+                          
                         </div>
-
-                        <div class="font-bold text-blue-900">
-                            $@ruta.Precio.ToString("N0") COP
-                        </div>
-                    </div>
+                    </article>
 
                     index++;
                 }
+            </section>
+        }
 
-            </div>
-        </div>
-
-        <!-- MAPA -->
-        <div class="w-[330px] pt-4 fade-in">
-            <div id="map" class="w-[330px] h-[330px] rounded-xl shadow"></div>
-        </div>
-
-    </div>
-
-    <!-- MAPA JS -->
-    <script>
-        var map = L.map('map').setView([10.97, -74.78], 7);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-
-        var routingControl = null;
-
-        document.querySelectorAll('[data-id]').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                var oLat = parseFloat(card.dataset.origenLat);
-                var oLng = parseFloat(card.dataset.origenLng);
-                var dLat = parseFloat(card.dataset.destinoLat);
-                var dLng = parseFloat(card.dataset.destinoLng);
-
-                if (routingControl) map.removeControl(routingControl);
-
-                routingControl = L.Routing.control({
-                    waypoints: [L.latLng(oLat, oLng), L.latLng(dLat, dLng)],
-                    addWaypoints: false,
-                    draggableWaypoints: false,
-                    show: false
-                }).addTo(map);
-
-                map.fitBounds([[oLat, oLng], [dLat, dLng]]);
-            });
-
-            card.addEventListener('click', () => {
-                window.location.href = '/Rutas/info/' + card.dataset.id;
-            });
-        });
-    </script>
+    </main>
 
 </body>
 </html>
