@@ -2,7 +2,7 @@
 @model Busticket.Models.ReporteVentaVM
 
 @{
-    ViewBag.Title = "Busticket - Selección de Asientos";
+    ViewBag.Title = "Selección de Asientos";
     Layout = null;
 }
 
@@ -15,71 +15,97 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <style>
-        .asiento:hover .tooltip {
-            display: block;
-        }
-    </style>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 
 <body class="bg-gradient-to-br from-slate-100 via-zinc-100 to-slate-200 text-slate-800">
 
-    <header class="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b border-white/40 shadow-sm">
-        <div class="w-[95%] max-w-[1400px] mx-auto py-6 flex items-center justify-between">
+    <!-- HEADER -->
+    <header class="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b shadow-sm">
+        <div class="max-w-7xl mx-auto px-10 py-6 flex justify-between items-center">
 
-            <a href="/Home/Index"
-               class="text-sm tracking-[0.35em] uppercase font-light text-slate-900">
+            <a href="/Home/Index" class="tracking-[0.35em] uppercase font-semibold">
                 Busticket
             </a>
 
-            <div class="relative">
-                <button id="btnCarrito">
-                    <i class="fa fa-shopping-cart text-xl text-slate-700 hover:text-black transition"></i>
-                </button>
+            <div class="flex gap-8 items-center text-xs uppercase tracking-widest">
 
-                <div id="dropdownCarrito"
-                     class="hidden absolute right-0 mt-3 w-72 bg-white/80 backdrop-blur-xl
-                        shadow-xl rounded-2xl p-5 border border-white/40 z-50">
+                <a href="/Ayuda">Ayuda</a>
 
-                    <h3 class="text-xs tracking-widest uppercase text-slate-500 mb-3">
-                        Carrito
-                    </h3>
-
-                    <ul id="listaCarrito" class="space-y-1 text-sm">
-                        @{
-                            var carrito = Context.Session
-                            .GetObjectFromJson<List<Busticket.DTOs.CarritoItem>>("Carrito")
-                            ?? new();
-                        }
-
-                        @foreach (var item in carrito)
-                        {
-                            <li class="border-b pb-1">
-                                Asiento @item.Codigo
-                            </li>
-                        }
-                    </ul>
-
-                    <p class="mt-4 font-semibold text-right">
-                        Total:
-                        <span id="totalCarrito">
-                            @(carrito.Sum(a => a.Precio).ToString("N0"))
-                        </span> COP
-                    </p>
-
-                    <a href="/Pago/Index"
-                       class="block mt-4 text-center rounded-full
-                          bg-gradient-to-r from-slate-900 to-slate-700
-                          py-2 text-white text-xs tracking-widest uppercase">
-                        Finalizar compra
+                @if (User.Identity!.IsAuthenticated)
+                {
+                    <a href="/Perfil"
+                       class="w-9 h-9 flex items-center justify-center rounded-full border">
+                        👤
                     </a>
-                </div>
+
+                    <!-- CARRITO -->
+                    <div class="relative">
+                        <button id="btnCarrito">
+                            <i class="fa fa-shopping-cart text-lg"></i>
+                        </button>
+
+                        <div id="dropdownCarrito"
+                             class="hidden absolute right-0 mt-3 w-72 bg-white rounded-2xl p-5 shadow-xl z-50">
+
+                            <h3 class="text-xs tracking-widest uppercase text-slate-500 mb-3">
+                                Carrito
+                            </h3>
+
+                            @{
+                                var carrito = Context.Session
+                                .GetObjectFromJson<List<Busticket.DTOs.CarritoItem>>("Carrito")
+                                ?? new();
+                            }
+
+                            <ul id="listaCarrito" class="space-y-2 text-sm">
+                                @if (!carrito.Any())
+                                {
+                                    <li class="text-center text-slate-400 text-xs">
+                                        Carrito vacío
+                                    </li>
+                                }
+                                else
+                                {
+                                    @foreach (var item in carrito)
+                                    {
+                                        <li class="flex justify-between border-b pb-1">
+                                            <span>Asiento @item.Codigo</span>
+                                            <button class="text-red-500 text-xs"
+                                                    onclick="eliminarAsiento(@item.AsientoId)">
+                                                ❌
+                                            </button>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+
+                            <p class="mt-4 text-right text-sm font-semibold">
+                                Total:
+                                <span id="totalCarrito">
+                                    @(carrito.Sum(a => a.Precio).ToString("N0"))
+                                </span> COP
+                            </p>
+
+                            <a href="/Pago/Index"
+                               class="block mt-4 text-center bg-slate-900 text-white py-2 rounded-full text-xs">
+                                Finalizar compra
+                            </a>
+                        </div>
+                    </div>
+
+                    <form asp-controller="Auth" asp-action="Logout" method="post">
+                        <button>Cerrar sesión</button>
+                    </form>
+                }
+                else
+                {
+                    <a href="/Auth/Login">Iniciar sesión</a>
+                }
             </div>
         </div>
     </header>
-
 
     <main class="max-w-[1400px] mx-auto px-10 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
 
@@ -90,23 +116,95 @@
                 Selección de asiento
             </h2>
 
-            <div class="grid grid-cols-5 gap-3 justify-items-center">
+            @{
+                var asientos = Model.Asientos.ToList();
+                int columnas = 5;
+            }
 
-                @foreach (var asiento in Model.Asientos)
-                {
-                    <button class="asiento w-10 h-10 rounded-md text-xs font-semibold border
-            @(asiento.Disponible
-                                        ? "bg-white border-[#c9a24d] text-[#8a6b2e]"
-                                        : "bg-slate-300 text-slate-500 cursor-not-allowed")"
-                            data-id="@asiento.AsientoId"
-                            data-codigo="@asiento.Numero"
-                            @(asiento.Disponible ? "" : "disabled")>
+            <!-- FILAS SUPERIORES -->
+            @for (int fila = 0; fila < 2; fila++)
+            {
+                <div class="grid grid-cols-5 gap-4 justify-center mb-2">
+                    @for (int col = 0; col < columnas; col++)
+                    {
+                        int index = fila + (col * 4);
+                        if (index < asientos.Count)
+                        {
+                            var asiento = asientos[index];
 
-                        @asiento.Numero
-                    </button>
-                }
+                            string clase;
+                            bool disabled = false;
 
+                            if (!asiento.Disponible)
+                            {
+                                clase = "bg-red-300 text-red-800 cursor-not-allowed";
+                                disabled = true;
+                            }
+                            else if (asiento.Reservado)
+                            {
+                                clase = "bg-yellow-300 text-yellow-800 cursor-not-allowed";
+                                disabled = true;
+                            }
+                            else
+                            {
+                                clase = "bg-white border border-[#c9a24d] text-[#8a6b2e] hover:bg-[#c9a24d] hover:text-white";
+                            }
+
+                            <button class="asiento w-12 h-12 rounded-md font-semibold @clase"
+                                    data-id="@asiento.AsientoId"
+                                    data-codigo="@asiento.Numero"
+                                    @(disabled ? "disabled" : "")>
+                                @asiento.Numero
+                            </button>
+                        }
+                    }
+                </div>
+            }
+
+            <!-- PASILLO -->
+            <div class="text-center my-4 text-xs tracking-widest text-slate-400">
+                ───────── PASILLO ─────────
             </div>
+
+            <!-- FILAS INFERIORES -->
+            @for (int fila = 2; fila < 4; fila++)
+            {
+                <div class="grid grid-cols-5 gap-4 justify-center mb-2">
+                    @for (int col = 0; col < columnas; col++)
+                    {
+                        int index = fila + (col * 4);
+                        if (index < asientos.Count)
+                        {
+                            var asiento = asientos[index];
+
+                            string clase;
+                            bool disabled = false;
+
+                            if (!asiento.Disponible)
+                            {
+                                clase = "bg-red-300 text-red-800 cursor-not-allowed";
+                                disabled = true;
+                            }
+                            else if (asiento.Reservado)
+                            {
+                                clase = "bg-yellow-300 text-yellow-800 cursor-not-allowed";
+                                disabled = true;
+                            }
+                            else
+                            {
+                                clase = "bg-white border border-[#c9a24d] text-[#8a6b2e] hover:bg-[#c9a24d] hover:text-white";
+                            }
+
+                            <button class="asiento w-12 h-12 rounded-md font-semibold @clase"
+                                    data-id="@asiento.AsientoId"
+                                    data-codigo="@asiento.Numero"
+                                    @(disabled ? "disabled" : "")>
+                                @asiento.Numero
+                            </button>
+                        }
+                    }
+                </div>
+            }
         </section>
 
         <!-- RESUMEN -->
@@ -121,49 +219,62 @@
             </form>
 
             <button id="agregarCarrito"
-                    class="mt-6 w-full rounded-full bg-slate-900 py-3 text-white">
+                    class="mt-6 w-full bg-slate-900 text-white py-3 rounded-full">
                 Agregar al carrito
             </button>
 
         </section>
+
     </main>
 
     <script>
         (() => {
 
             let asientosSeleccionados = [];
-            const precioAsiento = parseInt("@Model.Ruta.Precio");
+            const precio = parseInt("@Model.Ruta.Precio");
             const formato = new Intl.NumberFormat("es-CO");
 
             function actualizarTotal() {
                 document.getElementById("total").textContent =
-                    formato.format(asientosSeleccionados.length * precioAsiento);
+                    formato.format(asientosSeleccionados.length * precio);
             }
 
             document.querySelectorAll(".asiento").forEach(btn => {
-                btn.addEventListener("click", () => {
+                btn.addEventListener("click", async () => {
                     if (btn.disabled) return;
 
                     const asientoId = parseInt(btn.dataset.id);
                     const codigo = btn.dataset.codigo;
 
-                    const index = asientosSeleccionados.findIndex(a => a.AsientoId === asientoId);
+                    const token = document.querySelector(
+                        'input[name="__RequestVerificationToken"]'
+                    ).value;
 
-                    if (index >= 0) {
-                        asientosSeleccionados.splice(index, 1);
-                        btn.classList.remove("bg-slate-900", "text-white");
-                        btn.classList.add("bg-white", "text-[#8a6b2e]");
-                    } else {
-                        asientosSeleccionados.push({
-                            AsientoId: asientoId,
-                            Codigo: codigo,
-                            Precio: precioAsiento,
-                            RutaId: @Model.Ruta.RutaId
-                        });
+                    const res = await fetch("/Asientos/Reservar", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "RequestVerificationToken": token
+                        },
+                        body: JSON.stringify(asientoId)
+                    });
 
-                        btn.classList.remove("bg-white", "text-[#8a6b2e]");
-                        btn.classList.add("bg-slate-900", "text-white");
+                    if (!res.ok) {
+                        Swal.fire("Ocupado", "Asiento no disponible", "warning");
+                        btn.disabled = true;
+                        btn.classList.add("bg-yellow-300");
+                        return;
                     }
+
+                    asientosSeleccionados.push({
+                        AsientoId: asientoId,
+                        Codigo: codigo,
+                        Precio: precio,
+                        RutaId: @Model.Ruta.RutaId
+                    });
+
+                    btn.classList.remove("bg-white");
+                    btn.classList.add("bg-slate-900", "text-white");
 
                     actualizarTotal();
                 });
@@ -180,7 +291,7 @@
                     'input[name="__RequestVerificationToken"]'
                 ).value;
 
-                const res = await fetch("/Carrito/Agregar", {
+                await fetch("/Carrito/Agregar", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -192,33 +303,41 @@
                     })
                 });
 
-                const json = await res.json();
-
-                if (!res.ok) {
-                    Swal.fire("Error", json.mensaje, "error");
-                    return;
-                }
-
-                Swal.fire("Listo", json.mensaje, "success");
-                asientosSeleccionados = [];
-                actualizarTotal();
+                location.reload();
             });
 
         })();
-                const btnCarrito = document.getElementById("btnCarrito");
-        const dropdownCarrito = document.getElementById("dropdownCarrito");
+    </script>
 
-        btnCarrito.addEventListener("click", e => {
+    <script>
+        const btnCarrito = document.getElementById("btnCarrito");
+        const dropdown = document.getElementById("dropdownCarrito");
+
+        btnCarrito.onclick = e => {
             e.stopPropagation();
-            dropdownCarrito.classList.toggle("hidden");
-        });
+            dropdown.classList.toggle("hidden");
+        };
 
-        document.addEventListener("click", () => {
-            dropdownCarrito.classList.add("hidden");
-        });
+        document.addEventListener("click", () => dropdown.classList.add("hidden"));
+    </script>
 
-        dropdownCarrito.addEventListener("click", e => e.stopPropagation());
+    <script>
+        async function eliminarAsiento(asientoId) {
+            const token = document.querySelector(
+                'input[name="__RequestVerificationToken"]'
+            ).value;
 
+            await fetch("/Carrito/Eliminar", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": token
+                },
+                body: JSON.stringify({ asientoId })
+            });
+
+            location.reload();
+        }
     </script>
 
 </body>

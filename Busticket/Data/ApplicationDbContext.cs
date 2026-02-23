@@ -23,7 +23,7 @@ namespace Busticket.Data
         public DbSet<Venta> Venta { get; set; }
         public DbSet<Ciudad> Ciudad { get; set; }
         public DbSet<PasswordReset> PasswordReset { get; set; }
-
+        public DbSet<Cliente> Cliente { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -78,6 +78,16 @@ namespace Busticket.Data
                 .HasOne(i => i.Conductor)
                 .WithMany()
                 .HasForeignKey(i => i.ConductorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            //-----------------Cliente----------------
+            modelBuilder.Entity<Cliente>().ToTable("Cliente");
+
+            modelBuilder.Entity<Cliente>()
+                .HasOne(c => c.User)
+                .WithMany()
+                .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // ---------------- ASIENTO ----------------

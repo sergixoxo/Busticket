@@ -1,0 +1,208 @@
+﻿@model Busticket.Models.PerfilViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* 👉 Tu CSS queda IGUAL */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter',sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+        }
+
+        .perfil {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .panel {
+            width: 60%;
+            background: white;
+            padding: 50px 70px;
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 26px;
+            color: #1d3557;
+            margin-bottom: 20px;
+        }
+
+        .titulo {
+            font-size: 30px;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: #f7f9fb;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 18px;
+        }
+
+        .info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .dato {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .label {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .valor {
+            font-weight: 600;
+        }
+
+        .historial-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            margin-top: 10px;
+            background: #1d3557;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .foto-panel {
+            width: 40%;
+            background: #e9eef3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+        }
+
+        .foto {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+            .foto img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+        input[type=file] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="perfil">
+
+        <div class="panel">
+            <div class="logo">Busticket</div>
+            <div class="titulo">Mi Perfil</div>
+
+            <div class="card">
+                <h3>Información personal</h3>
+                <div class="info">
+
+                    <div class="dato">
+                        <div class="label">Nombre</div>
+                        <div class="valor">@Model.Nombre</div>
+                    </div>
+
+                    <div class="dato">
+                        <div class="label">Correo</div>
+                        <div class="valor">@Model.Correo</div>
+                    </div>
+
+                    <div class="dato">
+                        <div class="label">Teléfono</div>
+                        <div class="valor">@Model.Telefono</div>
+                    </div>
+
+
+                </div>
+            </div>
+
+          
+
+            <div class="card">
+                <h3>Historial de viajes</h3>
+
+                @foreach (var viaje in Model.HistorialViajes)
+                {
+                    <div class="historial-item">
+                        <span>@viaje.Origen → @viaje.Destino</span>
+                        <span>@viaje.Fecha.ToString("dd MMM yyyy")</span>
+                    </div>
+                }
+            </div>
+
+            <div class="card">
+                <h3>Seguridad</h3>
+                <button class="btn">Cambiar contraseña</button>
+            </div>
+        </div>
+
+        <div class="foto-panel">
+            <div class="foto">
+                <img id="preview" src="https://res.cloudinary.com/dbt58u6ag/image/upload/v1771867385/basic_e5v9wv.png" />
+            </div>
+
+            <label class="btn">
+                Cambiar foto
+                <input type="file" id="inputFoto" accept="image/*" />
+            </label>
+        </div>
+
+    </div>
+
+    <script>
+        const inputFoto = document.getElementById('inputFoto');
+        const preview = document.getElementById('preview');
+
+        inputFoto.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => preview.src = e.target.result;
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+
+</body>
+</html>

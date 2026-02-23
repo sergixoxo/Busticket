@@ -1,11 +1,19 @@
 ﻿using Busticket.Data;
 using Busticket.DTOs;
 using Busticket.Extensions;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using Busticket.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using SkiaSharp;
+using QuestPDF.Drawing;
+using QRCoder;
+
+
 
 namespace Busticket.Controllers
 {
@@ -57,9 +65,7 @@ namespace Busticket.Controllers
 
         }
 
-        // =========================
-        // POST: /Pago/FinalizarPago
-        // =========================
+
         // =========================
         // POST: /Pago/FinalizarPago
         // =========================
@@ -114,7 +120,7 @@ namespace Busticket.Controllers
 
             try
             {
-                // 🔹 Crear venta
+                // 1️⃣ Crear venta
                 venta = new Venta
                 {
                     Fecha = DateTime.Now,
@@ -127,11 +133,16 @@ namespace Busticket.Controllers
                 _context.Venta.Add(venta);
                 await _context.SaveChangesAsync();
 
-                // 🔹 Marcar asientos como NO disponibles
+                // 2️⃣ ASIENTOS → VENDIDOS
                 foreach (var asiento in asientosDb)
+                {
                     asiento.Disponible = false;
+                    asiento.Reservado = false;
+                    asiento.ReservadoPorUserId = null;
+                    asiento.FechaReserva = null;
+                }
 
-                // 🔹 Crear boletos
+                // 3️⃣ Crear boletos
                 foreach (var asiento in asientosDb)
                 {
                     _context.Boleto.Add(new Boleto
@@ -146,13 +157,14 @@ namespace Busticket.Controllers
                     });
                 }
 
+                // 4️⃣ Guardar TODO
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
             catch
             {
                 await transaction.RollbackAsync();
-                throw; // 🔴 si hay error, lo verás claramente
+                throw;
             }
 
             // 🧹 Limpiar carrito
@@ -190,9 +202,102 @@ namespace Busticket.Controllers
         // =========================
         // GET: /Pago/DescargarBoleto
         // =========================
-        public IActionResult DescargarBoleto(int ventaId)
+        public async Task<IActionResult> DescargarBoleto(int ventaId)
         {
-            return Content("Aquí va el PDF del boleto");
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var venta = await _context.Venta
+                .Include(v => v.Ruta).ThenInclude(r => r.Empresa)
+                .Include(v => v.Boletos).ThenInclude(b => b.Asiento)
+                .Include(v => v.User)
+                .FirstOrDefaultAsync(v => v.VentaId == ventaId);
+
+            if (venta == null)
+                return NotFound();
+
+            // 🔹 Links aleatorios
+            var instagramLinks = new[]
+            {
+        "https://www.instagram.com/itsadanba",
+        "https://www.instagram.com/sergixoxo",
+        "https://www.instagram.com/jacomu_ssi"
+    };
+
+            var instagramRandom = instagramLinks[new Random().Next(instagramLinks.Length)];
+
+            // 🔹 Generar QR
+            var qrGenerator = new QRCodeGenerator();
+            var qrData = qrGenerator.CreateQrCode(instagramRandom, QRCodeGenerator.ECCLevel.Q);
+            var qrCode = new PngByteQRCode(qrData);
+            byte[] qrBytes = qrCode.GetGraphic(20);
+
+            var pdf = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(250, 600); // 🎫 FORMATO TICKET
+                    page.Margin(20);
+
+                    page.Content().Column(col =>
+                    {
+                        col.Spacing(8);
+
+                        // HEADER
+                        col.Item().AlignCenter().Text("BUSTICKET")
+                            .FontSize(20)
+                            .Bold();
+
+                        col.Item().AlignCenter().Text("Boleto de Viaje")
+                            .FontSize(12)
+                            .Italic();
+
+                        col.Item().LineHorizontal(1);
+
+                        // INFO
+                        col.Item().Text($"Empresa: {venta.Ruta.Empresa.Nombre}");
+                        col.Item().Text($"Cliente: {venta.User.UserName}");
+                        col.Item().Text($"Fecha: {venta.Fecha:dd/MM/yyyy}");
+
+                        col.Item().LineHorizontal(1);
+
+                        col.Item().Text("Asientos:")
+                            .Bold();
+
+                        foreach (var b in venta.Boletos)
+                        {
+                            col.Item().Text($"• Asiento {b.Asiento.Numero}");
+                        }
+
+                        col.Item().LineHorizontal(1);
+
+                        col.Item().AlignCenter()
+                            .Text($"TOTAL: {venta.Total:N0} COP")
+                            .FontSize(14)
+                            .Bold();
+
+                        col.Item().PaddingTop(10)
+                            .AlignCenter()
+                            .Text("Escanea el QR")
+                            .FontSize(10);
+
+                        // QR ✅ CORRECTO
+                        col.Item()
+                            .AlignCenter()
+                            .Width(120)
+                            .Height(120)
+                            .Image(qrBytes);
+
+                        col.Item().PaddingTop(10)
+                            .AlignCenter()
+                            .Text("Gracias por viajar con nosotros")
+                            .FontSize(9)
+                            .Italic();
+                    });
+                });
+            });
+
+            var bytes = pdf.GeneratePdf();
+            return File(bytes, "application/pdf", $"Boleto_{ventaId}.pdf");
         }
     }
 }

@@ -39,15 +39,92 @@
 
 <body class="bg-[#f7f8fa] text-gray-800">
 
-    <!-- ================= HEADER ================= -->
-    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-10 py-6 flex justify-between items-center">
+    <header class="absolute top-0 inset-x-0 z-50">
+        <div class="max-w-7xl mx-auto px-10 py-6
+                    flex items-center justify-between
+                    text-black">
+
+            <!-- NAV -->
+            <!-- LOGO -->
             <a href="/Home/Index"
-               class="text-sm tracking-[0.35em] uppercase font-light text-gray-900">
+               class="text-2xl tracking-widest uppercase font-semibold">
                 Busticket
             </a>
 
-     
+            <!-- USER ACTIONS -->
+            <div class="flex gap-10 text-sm tracking-widest uppercase items-center">
+                <a href="/Ayuda"
+                   class="relative uppercase tracking-widest text-sm
+          after:content-[''] after:absolute after:left-0 after:-bottom-1
+          after:w-0 after:h-[1px] after:bg-white
+          after:transition-all after:duration-300
+          hover:after:w-full">
+                    Ayuda
+                </a>
+
+
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <a href="/Perfil"
+                       title="Mi cuenta"
+                       class="flex items-center justify-center w-10 h-10
+                                              rounded-full border border-white
+                                              hover:bg-white hover:text-black transition">
+                        👤
+                    </a>
+
+                    <form asp-controller="Auth"
+                          asp-action="Logout"
+                          method="post"
+                          class="inline">
+                        <button type="submit"
+                                class="relative uppercase tracking-widest text-sm
+                               after:content-[''] after:absolute after:left-0 after:-bottom-1
+                               after:w-0 after:h-[1px] after:bg-white
+                               after:transition-all after:duration-300
+                               hover:after:w-full">
+                            Cerrar sesión
+                        </button>
+
+                    </form>
+                }
+                else
+                {
+                    <a href="/Auth/Login"
+                       class="relative uppercase tracking-widest text-sm
+                          after:content-[''] after:absolute after:left-0 after:-bottom-1
+                          after:w-0 after:h-[1px] after:bg-white
+                          after:transition-all after:duration-300
+                          hover:after:w-full">
+                        Iniciar sesión
+                    </a>
+
+                }
+                @if (User.IsInRole("Admin"))
+                {
+                    <a href="/Admin/Index"
+                       class="relative uppercase tracking-widest text-sm
+                              after:content-[''] after:absolute after:left-0 after:-bottom-1
+                              after:w-0 after:h-[1px] after:bg-white
+                              after:transition-all after:duration-300
+                              hover:after:w-full">
+                        Admin
+                    </a>
+                }
+                @if (User.IsInRole("Empresa"))
+                {
+                    <a href="/Empresa/Dashboard"
+                       class="relative uppercase tracking-widest text-sm
+                              after:content-[''] after:absolute after:left-0 after:-bottom-1
+                              after:w-0 after:h-[1px] after:bg-white
+                              after:transition-all after:duration-300
+                              hover:after:w-full">
+                        Empresa
+                    </a>
+                }
+
+
+            </div>
         </div>
     </header>
 
@@ -55,7 +132,7 @@
     <main class="max-w-7xl mx-auto px-8 py-12 grid grid-cols-[280px_1fr_360px] gap-10">
 
         <!-- ========== FILTROS ========== -->
-        <aside class="fade-up sticky top-28">
+        <aside class="fade-up sticky top-70">
             <div class="bg-white/80 backdrop-blur rounded-2xl p-6 shadow-sm">
                 <h2 class="text-xs uppercase tracking-widest text-gray-500 mb-6">
                     Filtros
@@ -147,7 +224,7 @@
         </section>
 
         <!-- ========== MAPA ========== -->
-        <aside class="fade-up sticky top-28">
+        <aside class="fade-up sticky top-70">
             <div id="map" class="w-full h-[360px] rounded-2xl shadow-sm"></div>
         </aside>
 

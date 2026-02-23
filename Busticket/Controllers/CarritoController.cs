@@ -78,5 +78,27 @@ namespace Busticket.Controllers
             ViewBag.Total = carrito.Sum(a => a.Precio);
             return View(carrito);
         }
+    
+    public IActionResult Eliminar(int asientoId)
+        {
+            var carrito = HttpContext.Session
+                .GetObjectFromJson<List<CarritoItem>>("Carrito") ?? new();
+
+            var item = carrito.FirstOrDefault(x => x.AsientoId == asientoId);
+
+            if (item != null)
+                carrito.Remove(item);
+
+            HttpContext.Session.SetObjectAsJson("Carrito", carrito);
+
+            return Json(new
+            {
+                total = carrito.Sum(x => x.Precio),
+                cantidad = carrito.Count
+            });
+        }
     }
 }
+
+
+

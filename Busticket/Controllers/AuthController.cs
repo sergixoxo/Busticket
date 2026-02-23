@@ -134,10 +134,21 @@ namespace Busticket.Controllers
                 };
 
                 _context.Empresa.Add(empresa);
-                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                // ✅ CREAR CLIENTE (ESTO TE FALTABA)
+                var cliente = new Cliente
+                {
+                    UserId = user.Id,
+                    Nombre = model.Nombre!,
+                    Telefono = model.Telefono
+                };
+
+                _context.Cliente.Add(cliente);
             }
 
-            await _signInManager.SignInAsync(user, false);
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("Index", "Home");
         }

@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.StaticFiles;
-using Busticket.Data;
+﻿using Busticket.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,7 +37,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
-
+QuestPDF.Settings.License = LicenseType.Community;
 var app = builder.Build();
 
 // ===============================

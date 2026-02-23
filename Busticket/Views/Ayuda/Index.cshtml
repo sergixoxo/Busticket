@@ -1,0 +1,142 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1d3557;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 16px rgba(0,0,0,.06);
+        }
+
+            .card h3 {
+                font-size: 18px;
+                margin-bottom: 10px;
+                color: #1d3557;
+            }
+
+            .card p {
+                color: #555;
+                line-height: 1.6;
+            }
+
+        .contact {
+            background: #1d3557;
+            color: #fff;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+            .contact h3 {
+                margin-bottom: 10px;
+            }
+
+            .contact p {
+                opacity: .9;
+            }
+
+        .btn {
+            display: inline-block;
+            margin-top: 15px;
+            background: #fff;
+            color: #1d3557;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: .2s;
+        }
+
+            .btn:hover {
+                background: #e6e6e6;
+            }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="title">Centro de Ayuda</div>
+
+        <div class="card">
+            <h3>📌 ¿Cómo comprar un boleto?</h3>
+            <p>
+                Selecciona tu ruta, fecha de viaje y asiento disponible.
+                Luego completa el pago y recibirás tu boleto en tu cuenta.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>👤 Problemas con tu cuenta</h3>
+            <p>
+                Si olvidaste tu contraseña, puedes recuperarla desde la opción
+                <strong>“¿Olvidaste tu contraseña?”</strong> en el inicio de sesión.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>🚌 Gestión de viajes</h3>
+            <p>
+                Desde tu perfil puedes ver tus próximos viajes,
+                el historial y los detalles de cada boleto comprado.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>💳 Pagos y facturación</h3>
+            <p>
+                Aceptamos múltiples métodos de pago.
+                Si tu pago fue rechazado, verifica con tu entidad bancaria.
+            </p>
+        </div>
+
+        <div class="contact">
+            <h3>📞 ¿Necesitas más ayuda?</h3>
+            <p>
+                Escríbenos y nuestro equipo de soporte te ayudará lo antes posible.
+            </p>
+
+            <a href="mailto:soporte@busticket.com" class="btn">
+                Contactar soporte
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

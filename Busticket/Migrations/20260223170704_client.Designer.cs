@@ -4,6 +4,7 @@ using Busticket.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Busticket.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260223170704_client")]
+    partial class client
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,17 +36,8 @@ namespace Busticket.Migrations
                     b.Property<bool>("Disponible")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("FechaReserva")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("Numero")
                         .HasColumnType("int");
-
-                    b.Property<bool>("Reservado")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("ReservadoPorUserId")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RutaId")
                         .HasColumnType("int");

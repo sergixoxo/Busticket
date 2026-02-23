@@ -29,5 +29,6 @@ namespace Busticket.Models
         /* 🔹 EMPRESA (SOLO SI ES EMPRESA) */
         public string? NombreEmpresa { get; set; }
         public string? Nit { get; set; }
+        public string? Telefono { get; set; }
     }
 }
