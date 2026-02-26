@@ -24,6 +24,9 @@ namespace Busticket.Models
         public string ConfirmPassword { get; set; } = string.Empty;
 
         /* 🔹 PERSONA (Cliente / Conductor) */
+        [Required(ErrorMessage = "El nombre completo es obligatorio para usuarios personales")]
+        [StringLength(100, MinimumLength = 8, ErrorMessage = "Por favor, ingresa tu nombre y apellido completo (mínimo 8 caracteres)")]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El nombre solo puede contener letras")]
         public string? Nombre { get; set; }
 
         /* 🔹 EMPRESA (SOLO SI ES EMPRESA) */

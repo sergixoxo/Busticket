@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="BusTicket.Tests/BusTicket.Tests.csproj" Id="1c9ee049-92d2-4db1-9020-e04212137a31" />
   <Project Path="Busticket/Busticket.csproj" />
 </Solution>

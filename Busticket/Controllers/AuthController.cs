@@ -98,10 +98,12 @@ namespace Busticket.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            
             var existingUser = await _userManager.FindByEmailAsync(model.Email);
             if (existingUser != null)
             {
-                ViewBag.Error = "Este correo ya está registrado";
+                // Esto vincula el error directamente al campo Email en la vista
+                ModelState.AddModelError("Email", "Este correo electrónico ya está en uso. Intenta con otro.");
                 return View(model);
             }
 
@@ -116,7 +118,23 @@ namespace Busticket.Controllers
 
             if (!result.Succeeded)
             {
-                ViewBag.Error = string.Join(" | ", result.Errors.Select(e => e.Description));
+                foreach (var error in result.Errors)
+                {
+                    var mensajeEspanol = error.Description;
+
+                    // Traducciones a espanol para errores comunes de contraseña de Identity framework
+                    if (error.Code == "PasswordRequiresNonAlphanumeric")
+                        mensajeEspanol = "La contraseña debe tener al menos un carácter especial (ej: @, #, $).";
+                    if (error.Code == "PasswordRequiresLower")
+                        mensajeEspanol = "La contraseña debe tener al menos una letra minúscula.";
+                    if (error.Code == "PasswordRequiresUpper")
+                        mensajeEspanol = "La contraseña debe tener al menos una letra mayúscula.";
+                    if (error.Code == "PasswordRequiresDigit")
+                        mensajeEspanol = "La contraseña debe incluir al menos un número.";
+                    if (error.Code == "PasswordTooShort")
+                        mensajeEspanol = "La contraseña debe tener al menos 6 caracteres.";
+                    ModelState.AddModelError("Password", mensajeEspanol);
+                }
                 return View(model);
             }
 
