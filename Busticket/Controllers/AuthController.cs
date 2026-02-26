@@ -150,6 +150,10 @@ namespace Busticket.Controllers
 
             await _context.SaveChangesAsync();
 
+
+            // LOGIN AUTOMÁTICO
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
             return RedirectToAction("Index", "Home");
         }
 

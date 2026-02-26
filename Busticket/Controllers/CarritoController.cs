@@ -78,26 +78,35 @@ namespace Busticket.Controllers
             ViewBag.Total = carrito.Sum(a => a.Precio);
             return View(carrito);
         }
-    
-    public IActionResult Eliminar(int asientoId)
+
+
+
+
+        [HttpPost("Eliminar")]
+        [IgnoreAntiforgeryToken]  // 🔹 desactiva la validación solo para JSON fetch
+        public IActionResult Eliminar([FromBody] EliminarAsientoRequest request)
         {
-            var carrito = HttpContext.Session
-                .GetObjectFromJson<List<CarritoItem>>("Carrito") ?? new();
+            var carrito = HttpContext.Session.GetObjectFromJson<List<CarritoItem>>("Carrito") ?? new List<CarritoItem>();
 
-            var item = carrito.FirstOrDefault(x => x.AsientoId == asientoId);
-
+            var item = carrito.FirstOrDefault(c => c.AsientoId == request.AsientoId);
             if (item != null)
-                carrito.Remove(item);
-
-            HttpContext.Session.SetObjectAsJson("Carrito", carrito);
-
-            return Json(new
             {
-                total = carrito.Sum(x => x.Precio),
-                cantidad = carrito.Count
-            });
+                carrito.Remove(item);
+                HttpContext.Session.SetObjectAsJson("Carrito", carrito);
+            }
+
+            var total = carrito.Sum(c => c.Precio);
+            var cantidad = carrito.Count;
+
+            return Ok(new { total, cantidad });
+        }
+
+        public class EliminarAsientoRequest
+        {
+            public int AsientoId { get; set; }
         }
     }
+
 }
 
 

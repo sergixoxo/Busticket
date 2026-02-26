@@ -3,10 +3,11 @@ using Busticket.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Busticket.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Empresa,Admin")]
     public class EmpresaController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -16,70 +17,111 @@ namespace Busticket.Controllers
             _context = context;
         }
 
-        // LISTAR EMPRESAS
+        // ===============================
+        // LISTAR (SOLO LA EMPRESA DEL USUARIO)
+        // ===============================
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var empresas = await _context.Empresa.ToListAsync();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var empresas = await _context.Empresa
+                .Where(e => e.UserId == userId)
+                .ToListAsync();
+
             return View(empresas);
         }
 
-        // CREAR EMPRESA GET
+        // ===============================
+        // CREAR
+        // ===============================
+        [HttpGet]
         public IActionResult Crear()
         {
             return View(new Empresa());
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Crear(Empresa empresa)
         {
             if (!ModelState.IsValid)
                 return View(empresa);
 
+            // 🔑 ASIGNAR USUARIO LOGUEADO
+            empresa.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             _context.Empresa.Add(empresa);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index");
+
+            return RedirectToAction(nameof(Index));
         }
 
-
-
-        // EDITAR EMPRESA GET
+        // ===============================
+        // EDITAR
+        // ===============================
+        [HttpGet]
         public async Task<IActionResult> Editar(int id)
         {
-            var empresa = await _context.Empresa.FindAsync(id);
-            if (empresa == null) return NotFound();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var empresa = await _context.Empresa
+                .FirstOrDefaultAsync(e => e.EmpresaId == id && e.UserId == userId);
+
+            if (empresa == null)
+                return NotFound();
+
             return View(empresa);
         }
 
-        // EDITAR EMPRESA POST
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Editar(Empresa empresa)
         {
             if (!ModelState.IsValid)
                 return View(empresa);
 
+            empresa.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             _context.Empresa.Update(empresa);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index");
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // ELIMINAR EMPRESA GET
+        // ===============================
+        // ELIMINAR
+        // ===============================
+        [HttpGet]
         public async Task<IActionResult> Eliminar(int id)
         {
-            var empresa = await _context.Empresa.FindAsync(id);
-            if (empresa == null) return NotFound();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var empresa = await _context.Empresa
+                .FirstOrDefaultAsync(e => e.EmpresaId == id && e.UserId == userId);
+
+            if (empresa == null)
+                return NotFound();
+
             return View(empresa);
         }
 
-        // ELIMINAR EMPRESA POST
-        [HttpPost, ActionName("Eliminar")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EliminarConfirmado(int id)
         {
-            var empresa = await _context.Empresa.FindAsync(id);
-            if (empresa == null) return NotFound();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var empresa = await _context.Empresa
+                .FirstOrDefaultAsync(e => e.EmpresaId == id && e.UserId == userId);
+
+            if (empresa == null)
+                return NotFound();
 
             _context.Empresa.Remove(empresa);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index");
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

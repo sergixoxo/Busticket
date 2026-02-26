@@ -52,7 +52,7 @@ else
 }
 
 app.UseHttpsRedirection();
-
+app.UseDeveloperExceptionPage();
 // ===============================
 // STATIC FILES
 // ===============================

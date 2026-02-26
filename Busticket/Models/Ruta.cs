@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Busticket.Models
@@ -10,37 +11,48 @@ namespace Busticket.Models
         public int RutaId { get; set; }
 
         // Ciudad Origen
-        [Required(ErrorMessage = "Debe seleccionar la ciudad de origen.")]
-        public int CiudadOrigenId { get; set; }   // ← YA NO ES NULLABLE
+        [Required]
+        public int CiudadOrigenId { get; set; }
 
         [ForeignKey("CiudadOrigenId")]
-        public Ciudad? CiudadOrigen { get; set; }  // ← YA NO ES NULLABLE
+        [ValidateNever]
+        public Ciudad CiudadOrigen { get; set; }
 
         // Ciudad Destino
-        [Required(ErrorMessage = "Debe seleccionar la ciudad de destino.")]
-        public int CiudadDestinoId { get; set; }  // ← YA NO ES NULLABLE
-
+        [Required]
+        public int CiudadDestinoId { get; set; }
+        [ValidateNever]
         [ForeignKey("CiudadDestinoId")]
-        public Ciudad? CiudadDestino { get; set; } // ← YA NO ES NULLABLE
+        public Ciudad CiudadDestino { get; set; }
 
         // Empresa
-        [Required(ErrorMessage = "Debe seleccionar una empresa.")]
-        public int EmpresaId { get; set; }        // ← YA NO ES NULLABLE
+
+        public int EmpresaId { get; set; }
 
         [ForeignKey("EmpresaId")]
-        public Empresa? Empresa { get; set; }      // ← YA NO ES NULLABLE
+        [ValidateNever]
+        public Empresa Empresa { get; set; }
 
         // Precio
-        [Required(ErrorMessage = "Debe ingresar un precio.")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "El precio debe ser mayor a 0.")]
+        [Required]
         public decimal Precio { get; set; }
 
         // Duración
-        [Required(ErrorMessage = "Debe ingresar la duración.")]
-        [Range(1, int.MaxValue, ErrorMessage = "La duración debe ser mayor a 0.")]
+        [Required]
         public int DuracionMin { get; set; }
 
-        public string? ImagenUrl { get; set; }
+        // 🆕 FECHAS
+   
+
+[DataType(DataType.DateTime)]
+    [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
+    public DateTime FechaSalida { get; set; }
+
+    [DataType(DataType.DateTime)]
+    [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
+    public DateTime FechaLlegada { get; set; }
+
+    public string? ImagenUrl { get; set; }
 
         public List<Asiento>? Asiento { get; set; }
     }

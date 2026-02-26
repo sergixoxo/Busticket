@@ -153,10 +153,37 @@ namespace Busticket.Controllers
         [HttpPost, ActionName("EliminarRuta")]
         public async Task<IActionResult> EliminarRutaConfirmado(int id)
         {
-            var ruta = await _context.Ruta.FindAsync(id);
+            // Traer la ruta con sus asientos
+            var ruta = await _context.Ruta
+                .Include(r => r.Asiento)   // asientos de la ruta
+                .FirstOrDefaultAsync(r => r.RutaId == id);
+
             if (ruta == null) return NotFound();
 
+            // -----------------------------
+            // 1️⃣ Borrar boletos asociados a cada asiento
+            // -----------------------------
+            var boletos = _context.Boleto
+                .Where(b => ruta.Asiento.Select(a => a.AsientoId).Contains(b.AsientoId));
+            _context.Boleto.RemoveRange(boletos);
+
+            // -----------------------------
+            // 2️⃣ Borrar ventas asociadas (opcional)
+            // -----------------------------
+            var ventas = _context.Venta.Where(v => v.RutaId == id);
+            _context.Venta.RemoveRange(ventas);
+
+            // -----------------------------
+            // 3️⃣ Borrar asientos
+            // -----------------------------
+            if (ruta.Asiento != null && ruta.Asiento.Any())
+                _context.Asiento.RemoveRange(ruta.Asiento);
+
+            // -----------------------------
+            // 4️⃣ Borrar la ruta
+            // -----------------------------
             _context.Ruta.Remove(ruta);
+
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Ruta eliminada correctamente.";

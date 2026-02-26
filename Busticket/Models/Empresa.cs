@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Busticket.Models
 {
- 
     public class Empresa
     {
         [Key]
@@ -19,7 +18,7 @@ namespace Busticket.Models
         public string Nit { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El correo es obligatorio")]
-        [EmailAddress(ErrorMessage = "Correo inv�lido")]
+        [EmailAddress(ErrorMessage = "Correo inválido")]
         public string Email { get; set; } = string.Empty;
 
         [StringLength(50)]
@@ -28,12 +27,13 @@ namespace Busticket.Models
         [StringLength(20)]
         public string? Telefono { get; set; }
 
+        // 🔑 RELACIÓN CON USUARIO
         [Required]
         public string UserId { get; set; } = string.Empty;
 
-        public IdentityUser? User { get; set; }
+        [ForeignKey(nameof(UserId))]
+        public IdentityUser User { get; set; } = null!;
 
         public DateTime FechaRegistro { get; set; } = DateTime.UtcNow;
     }
-
 }

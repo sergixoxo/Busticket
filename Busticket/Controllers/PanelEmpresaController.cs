@@ -6,23 +6,24 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace Busticket.Controllers
 {
-    [Authorize(Roles = "Empresa")]
+    [Authorize(Roles = "Empresa,Admin")]
     public class PanelEmpresaController : Controller
+
+
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public PanelEmpresaController(
-            ApplicationDbContext context,
-            UserManager<IdentityUser> userManager)
+        public PanelEmpresaController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
 
-        // 🔹 DASHBOARD EMPRESA
+        // DASHBOARD
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);
@@ -30,41 +31,32 @@ namespace Busticket.Controllers
             var empresa = await _context.Empresa
                 .FirstOrDefaultAsync(e => e.UserId == userId);
 
-            if (empresa == null)
-                return RedirectToAction("CrearEmpresa");
-
             var ventas = await _context.Venta
                 .Where(v => v.EmpresaId == empresa.EmpresaId)
                 .Include(v => v.User)
                 .Include(v => v.Empresa)
                 .ToListAsync();
 
-            var vm = new PanelEmpresaVM
+            return View(new PanelEmpresaVM
             {
                 Empresa = empresa,
                 Ventas = ventas
-            };
-
-            return View(vm);
+            });
         }
 
-
-
-        public IActionResult CrearEmpresa()
-        {
-            return View();
-        }
-        // 🔹 RUTAS DE LA EMPRESA
+        // LISTAR RUTAS
         public async Task<IActionResult> Rutas()
         {
             var userId = _userManager.GetUserId(User);
 
             var empresa = await _context.Empresa
-                .FirstOrDefaultAsync(e => e.UserId == userId);
+      .FirstOrDefaultAsync(e => e.UserId == userId);
 
             if (empresa == null)
-                return Unauthorized();
-
+            {
+                TempData["ErrorMessage"] = "No existe una empresa asociada a este usuario.";
+                return RedirectToAction("Index", "Home");
+            }
             var rutas = await _context.Ruta
                 .Where(r => r.EmpresaId == empresa.EmpresaId)
                 .Include(r => r.CiudadOrigen)
@@ -74,34 +66,22 @@ namespace Busticket.Controllers
             return View(rutas);
         }
 
-        // 🔹 CREAR RUTA (GET)
-
-        // 🔹 CREAR RUTA (GET)
+        // CREAR RUTA GET
         public IActionResult CrearRuta()
         {
-            var ciudades = _context.Ciudad.ToList();
-
-            if (!ciudades.Any())
-            {
-                return Content("No hay ciudades registradas. Cree ciudades primero.");
-            }
-
-            ViewBag.Ciudades = ciudades;
+            ViewBag.Ciudades = _context.Ciudad.ToList();
             return View(new Ruta());
         }
 
-        // 🔹 CREAR RUTA (POST)
+        // CREAR RUTA POST
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CrearRuta(Ruta ruta)
         {
-            // 🔑 CLAVE: EmpresaId NO viene del formulario
             ModelState.Remove("EmpresaId");
 
             if (ruta.CiudadOrigenId == ruta.CiudadDestinoId)
-            {
-                ModelState.AddModelError("", "La ciudad de origen y destino no pueden ser la misma.");
-            }
+                ModelState.AddModelError("", "Origen y destino no pueden ser iguales");
 
             if (!ModelState.IsValid)
             {
@@ -112,29 +92,20 @@ namespace Busticket.Controllers
             var userId = _userManager.GetUserId(User);
 
             var empresa = await _context.Empresa
-                .FirstOrDefaultAsync(e => e.UserId == userId);
-
-            if (empresa == null)
-                return Unauthorized();
+                .FirstAsync(e => e.UserId == userId);
 
             ruta.EmpresaId = empresa.EmpresaId;
 
             _context.Ruta.Add(ruta);
             await _context.SaveChangesAsync();
 
-            // 👉 Asientos (por ahora 20)
             var asientos = Enumerable.Range(1, 20)
-                .Select(i => new Asiento
-                {
-                    Numero = i,
-                    RutaId = ruta.RutaId
-                }).ToList();
+                .Select(i => new Asiento { Numero = i, RutaId = ruta.RutaId });
 
             _context.Asiento.AddRange(asientos);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Rutas");
+            return RedirectToAction(nameof(Rutas));
         }
-
     }
 }

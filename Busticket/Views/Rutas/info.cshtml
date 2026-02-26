@@ -70,12 +70,9 @@
                                 {
                                     @foreach (var item in carrito)
                                     {
-                                        <li class="flex justify-between border-b pb-1">
+                                        <li class="flex justify-between border-b pb-1" data-id="@item.AsientoId">
                                             <span>Asiento @item.Codigo</span>
-                                            <button class="text-red-500 text-xs"
-                                                    onclick="eliminarAsiento(@item.AsientoId)">
-                                                ❌
-                                            </button>
+                                            <button class="text-red-500 text-xs" onclick="eliminarAsiento(@item.AsientoId)">❌</button>
                                         </li>
                                     }
                                 }
@@ -239,46 +236,56 @@
                     formato.format(asientosSeleccionados.length * precio);
             }
 
-            document.querySelectorAll(".asiento").forEach(btn => {
-                btn.addEventListener("click", async () => {
-                    if (btn.disabled) return;
+                    document.querySelectorAll(".asiento").forEach(btn => {
+            btn.addEventListener("click", async () => {
+                if (btn.disabled) return;
 
-                    const asientoId = parseInt(btn.dataset.id);
-                    const codigo = btn.dataset.codigo;
+                const asientoId = parseInt(btn.dataset.id);
+                const codigo = btn.dataset.codigo;
 
-                    const token = document.querySelector(
-                        'input[name="__RequestVerificationToken"]'
-                    ).value;
+                const index = asientosSeleccionados.findIndex(a => a.AsientoId === asientoId);
 
-                    const res = await fetch("/Asientos/Reservar", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "RequestVerificationToken": token
-                        },
-                        body: JSON.stringify(asientoId)
-                    });
-
-                    if (!res.ok) {
-                        Swal.fire("Ocupado", "Asiento no disponible", "warning");
-                        btn.disabled = true;
-                        btn.classList.add("bg-yellow-300");
-                        return;
-                    }
-
-                    asientosSeleccionados.push({
-                        AsientoId: asientoId,
-                        Codigo: codigo,
-                        Precio: precio,
-                        RutaId: @Model.Ruta.RutaId
-                    });
-
-                    btn.classList.remove("bg-white");
-                    btn.classList.add("bg-slate-900", "text-white");
-
+                if (index >= 0) {
+                    // Si ya está seleccionado, quitarlo (deseleccionar)
+                    asientosSeleccionados.splice(index, 1);
+                    btn.classList.remove("bg-slate-900", "text-white");
+                    btn.classList.add("bg-white", "border", "border-[#c9a24d]", "text-[#8a6b2e]");
                     actualizarTotal();
+                    return;
+                }
+
+                // Si no está seleccionado, reservarlo (como antes)
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                const res = await fetch("/Asientos/Reservar", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "RequestVerificationToken": token
+                    },
+                    body: JSON.stringify(asientoId)
                 });
+
+                if (!res.ok) {
+                    Swal.fire("Ocupado", "Asiento no disponible", "warning");
+                    btn.disabled = true;
+                    btn.classList.add("bg-yellow-300");
+                    return;
+                }
+
+                asientosSeleccionados.push({
+                    AsientoId: asientoId,
+                    Codigo: codigo,
+                    Precio: precio,
+                    RutaId: @Model.Ruta.RutaId
+                });
+
+                btn.classList.remove("bg-white", "border", "border-[#c9a24d]", "text-[#8a6b2e]");
+                btn.classList.add("bg-slate-900", "text-white");
+
+                actualizarTotal();
             });
+        });
 
             document.getElementById("agregarCarrito").addEventListener("click", async () => {
 
@@ -322,12 +329,10 @@
     </script>
 
     <script>
-        async function eliminarAsiento(asientoId) {
-            const token = document.querySelector(
-                'input[name="__RequestVerificationToken"]'
-            ).value;
+             async function eliminarAsiento(asientoId) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
-            await fetch("/Carrito/Eliminar", {
+            const res = await fetch("/Carrito/Eliminar", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -336,7 +341,16 @@
                 body: JSON.stringify({ asientoId })
             });
 
-            location.reload();
+            if (!res.ok) {
+                Swal.fire("Error", "No se pudo eliminar el asiento", "error");
+                return;
+            }
+
+            const data = await res.json();
+
+            // Actualizar total y cantidad en la vista
+            document.getElementById("totalCarrito").textContent = data.total.toLocaleString();
+            document.getElementById("listaCarrito").querySelector(`li[data-id='${asientoId}']`)?.remove();
         }
     </script>
 
