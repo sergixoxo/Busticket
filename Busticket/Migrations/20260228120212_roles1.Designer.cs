@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Busticket.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260225225254_RutaFix")]
-    partial class RutaFix
+    [Migration("20260228120212_roles1")]
+    partial class roles1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -553,6 +553,26 @@ namespace Busticket.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "83ca341c-300c-4034-93c6-291771120464",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "543f9a78-295b-4330-80e3-4672e8790089",
+                            Name = "Cliente",
+                            NormalizedName = "CLIENTE"
+                        },
+                        new
+                        {
+                            Id = "543f9a78-123b-4330-80e4-4672y8794549",
+                            Name = "Empresa",
+                            NormalizedName = "EMPRESA"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

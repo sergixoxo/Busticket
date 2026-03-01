@@ -205,6 +205,28 @@ namespace Busticket.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Cliente",
+                columns: table => new
+                {
+                    ClienteId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Nombre = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Documento = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Telefono = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cliente", x => x.ClienteId);
+                    table.ForeignKey(
+                        name: "FK_Cliente_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Empresa",
                 columns: table => new
                 {
@@ -285,6 +307,8 @@ namespace Busticket.Migrations
                     EmpresaId = table.Column<int>(type: "int", nullable: false),
                     Precio = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DuracionMin = table.Column<int>(type: "int", nullable: false),
+                    FechaSalida = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FechaLlegada = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ImagenUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -346,6 +370,9 @@ namespace Busticket.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Numero = table.Column<int>(type: "int", nullable: false),
                     Disponible = table.Column<bool>(type: "bit", nullable: false),
+                    Reservado = table.Column<bool>(type: "bit", nullable: false),
+                    ReservadoPorUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FechaReserva = table.Column<DateTime>(type: "datetime2", nullable: true),
                     RutaId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -585,6 +612,11 @@ namespace Busticket.Migrations
                 column: "EmpresaId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Cliente_UserId",
+                table: "Cliente",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Empresa_UserId",
                 table: "Empresa",
                 column: "UserId");
@@ -680,6 +712,9 @@ namespace Busticket.Migrations
 
             migrationBuilder.DropTable(
                 name: "Boleto");
+
+            migrationBuilder.DropTable(
+                name: "Cliente");
 
             migrationBuilder.DropTable(
                 name: "Itinerario");

@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Busticket.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251222220334_initial")]
-    partial class initial
+    [Migration("20260228115609_roles")]
+    partial class roles
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -36,8 +36,17 @@ namespace Busticket.Migrations
                     b.Property<bool>("Disponible")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("FechaReserva")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Numero")
                         .HasColumnType("int");
+
+                    b.Property<bool>("Reservado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ReservadoPorUserId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RutaId")
                         .HasColumnType("int");
@@ -185,6 +194,39 @@ namespace Busticket.Migrations
                             Lng = -73.119799999999998,
                             Nombre = "Bucaramanga"
                         });
+                });
+
+            modelBuilder.Entity("Busticket.Models.Cliente", b =>
+                {
+                    b.Property<int>("ClienteId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ClienteId"));
+
+                    b.Property<string>("Documento")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("ClienteId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Cliente", (string)null);
                 });
 
             modelBuilder.Entity("Busticket.Models.Conductor", b =>
@@ -428,6 +470,12 @@ namespace Busticket.Migrations
                     b.Property<int>("EmpresaId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("FechaLlegada")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaSalida")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ImagenUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -505,6 +553,20 @@ namespace Busticket.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "83ca341c-300c-4034-93c6-291771120464",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "543f9a78-295b-4330-80e3-4672e8790089",
+                            Name = "Cliente",
+                            NormalizedName = "CLIENTE"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -733,6 +795,17 @@ namespace Busticket.Migrations
                         .IsRequired();
 
                     b.Navigation("Empresa");
+                });
+
+            modelBuilder.Entity("Busticket.Models.Cliente", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Busticket.Models.Empresa", b =>

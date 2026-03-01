@@ -164,6 +164,32 @@ namespace Busticket.Data
                 new Ciudad { CiudadId = 5, Nombre = "Barranquilla", Lat = 10.96389, Lng = -74.79639 },
                 new Ciudad { CiudadId = 6, Nombre = "Bucaramanga", Lat = 7.12539, Lng = -73.1198 }
             );
+            // ---------------- SEED ROLES (DATOS INICIALES) ----------------
+            // Definimos IDs fijos para que no cambien nunca
+            string adminRoleId = "83ca341c-300c-4034-93c6-291771120464";
+            string clienteRoleId = "543f9a78-295b-4330-80e3-4672e8790089";
+            string EmpresaRoleId = "543f9a78-123b-4330-80e4-4672y8794549";
+
+            modelBuilder.Entity<IdentityRole>().HasData(
+                new IdentityRole
+                {
+                    Id = adminRoleId,
+                    Name = "Admin",
+                    NormalizedName = "ADMIN"
+                },
+                new IdentityRole
+                {
+                    Id = clienteRoleId,
+                    Name = "Cliente",
+                    NormalizedName = "CLIENTE"
+                },
+                new IdentityRole
+                {
+                    Id = EmpresaRoleId,
+                    Name = "Empresa",
+                    NormalizedName = "EMPRESA"
+                }
+            );
         }
     }
 }
