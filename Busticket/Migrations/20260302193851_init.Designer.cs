@@ -12,15 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Busticket.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260228115609_roles")]
-    partial class roles
+    [Migration("20260302193851_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.1")
+                .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -264,7 +264,9 @@ namespace Busticket.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("FechaRegistro")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("Nit")
                         .IsRequired()
@@ -558,14 +560,23 @@ namespace Busticket.Migrations
                         new
                         {
                             Id = "83ca341c-300c-4034-93c6-291771120464",
+                            ConcurrencyStamp = "2ca686af-face-4aef-aff1-a6f990c5b846",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "543f9a78-295b-4330-80e3-4672e8790089",
+                            ConcurrencyStamp = "cceacb20-2f45-4a2f-a1ca-585359e59bdb",
                             Name = "Cliente",
                             NormalizedName = "CLIENTE"
+                        },
+                        new
+                        {
+                            Id = "543f9a78-123b-4330-80e4-4672y8794549",
+                            ConcurrencyStamp = "c3026a58-0ded-44aa-bf93-2e783d4b556c",
+                            Name = "Empresa",
+                            NormalizedName = "EMPRESA"
                         });
                 });
 

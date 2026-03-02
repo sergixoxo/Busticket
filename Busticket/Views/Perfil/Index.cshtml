@@ -13,12 +13,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        /* 👉 Tu CSS queda IGUAL */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter',sans-serif;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
@@ -27,13 +26,30 @@
 
         .perfil {
             display: flex;
+            justify-content: center;
+            align-items: stretch;
             min-height: 100vh;
         }
 
         .panel {
-            width: 60%;
+            display: flex;
+            width: 100%;
             background: white;
+        }
+              
+        .contenido {
+            width: 60%;
             padding: 50px 70px;
+        }
+
+        .foto-panel {
+            width: 40%;
+            background: #e9eef3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
         }
 
         .logo {
@@ -54,6 +70,12 @@
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 18px;
+        }
+
+        .card-historial {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
         }
 
         .info {
@@ -95,16 +117,8 @@
             padding: 12px;
             border-radius: 8px;
             cursor: pointer;
-        }
-
-        .foto-panel {
-            width: 40%;
-            background: #e9eef3;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 18px;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .foto {
@@ -123,6 +137,38 @@
         input[type=file] {
             display: none;
         }
+
+        /* ===== RESPONSIVE ===== */
+        @@media (max-width: 1024px) {
+
+            .card-historial {
+                max-height: 400px;
+            }
+            .panel {
+                flex-direction: column;
+            }
+
+            .contenido {
+                width: 100%;
+                padding: 30px 20px;
+            }
+
+            .foto-panel {
+                width: 100%;
+                padding: 30px 20px;
+                order: 0; 
+            }
+
+            .info {
+                grid-template-columns: 1fr;
+            }
+
+            .historial-item {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+
     </style>
 </head>
 
@@ -131,61 +177,64 @@
     <div class="perfil">
 
         <div class="panel">
-            <div class="logo">Busticket</div>
-            <div class="titulo">Mi Perfil</div>
 
-            <div class="card">
-                <h3>Información personal</h3>
-                <div class="info">
+            <div class="contenido">
+                <div class="logo">Busticket</div>
+                <div class="titulo">Mi Perfil</div>
 
-                    <div class="dato">
-                        <div class="label">Nombre</div>
-                        <div class="valor">@Model.Nombre</div>
+                <div class="card">
+                    <h3>Información personal</h3>
+                    <div class="info">
+
+                        <div class="dato">
+                            <div class="label">Nombre</div>
+                            <div class="valor">@Model.Nombre</div>
+                        </div>
+
+                        <div class="dato">
+                            <div class="label">Correo</div>
+                            <div class="valor">@Model.Correo</div>
+                        </div>
+
+                        <div class="dato">
+                            <div class="label">Teléfono</div>
+                            <div class="valor">@Model.Telefono</div>
+                        </div>
+
                     </div>
+                </div>
 
-                    <div class="dato">
-                        <div class="label">Correo</div>
-                        <div class="valor">@Model.Correo</div>
-                    </div>
+                <div class="card card-historial">
+                    <h3>Historial de viajes</h3>
 
-                    <div class="dato">
-                        <div class="label">Teléfono</div>
-                        <div class="valor">@Model.Telefono</div>
-                    </div>
+                    @foreach (var viaje in Model.HistorialViajes)
+                    {
+                        <div class="historial-item">
+                            <span>@viaje.Origen → @viaje.Destino</span>
+                            <span>@viaje.Fecha.ToString("dd MMM yyyy")</span>
+                        </div>
+                    }
+                </div>
 
-
+                <div class="card">
+                    <a href="https://caprendizaje.sena.edu.co/sgva/SGVA_Diseno/pag/login.aspx"
+                       target="_blank"
+                       class="btn">Cambiar contraseña</a>
                 </div>
             </div>
 
-          
+            <div class="foto-panel">
+                <div class="foto">
+                    <img id="preview"
+                         src="https://res.cloudinary.com/dbt58u6ag/image/upload/v1771867385/basic_e5v9wv.png" />
+                </div>
 
-            <div class="card">
-                <h3>Historial de viajes</h3>
-
-                @foreach (var viaje in Model.HistorialViajes)
-                {
-                    <div class="historial-item">
-                        <span>@viaje.Origen → @viaje.Destino</span>
-                        <span>@viaje.Fecha.ToString("dd MMM yyyy")</span>
-                    </div>
-                }
+                <label class="btn">
+                    Cambiar foto
+                    <input type="file" id="inputFoto" accept="image/*" />
+                </label>
             </div>
 
-            <div class="card">
-                
-                <a href="https://caprendizaje.sena.edu.co/sgva/SGVA_Diseno/pag/login.aspx"target="_blank" class="btn">Cambiar contraseña</a>
-            </div>
-        </div>
-
-        <div class="foto-panel">
-            <div class="foto">
-                <img id="preview" src="https://res.cloudinary.com/dbt58u6ag/image/upload/v1771867385/basic_e5v9wv.png" />
-            </div>
-
-            <label class="btn">
-                Cambiar foto
-                <input type="file" id="inputFoto" accept="image/*" />
-            </label>
         </div>
 
     </div>

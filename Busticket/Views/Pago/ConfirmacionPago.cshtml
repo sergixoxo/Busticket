@@ -9,17 +9,24 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Compra realizada</title>
 </head>
-<body class="flex justify-center items-center min-h-screen bg-gray-100">
 
-    <div class="bg-white p-10 rounded-xl shadow-lg text-center">
-        <h1 class="text-3xl font-bold text-green-600 mb-4">
+<body class="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+
+    <div class="bg-white w-full max-w-md sm:max-w-lg
+                p-6 sm:p-10
+                rounded-2xl shadow-xl
+                text-center
+                animate-fade">
+
+        <h1 class="text-2xl sm:text-3xl font-bold text-green-600 mb-4">
             ¡Compra realizada con éxito!
         </h1>
 
-        <p class="mb-6">
+        <p class="text-gray-600 mb-6 text-sm sm:text-base">
             Gracias por tu compra.
         </p>
 
@@ -27,16 +34,22 @@
            asp-action="DescargarBoleto"
            asp-route-ventaId="@Model.VentaId"
            target="_blank"
-           class="bg-[#284D67] text-white px-6 py-3 rounded-lg inline-block">
+           class="block w-full sm:inline-block sm:w-auto
+                  bg-[#284D67] hover:bg-[#1f3b50]
+                  text-white px-6 py-3
+                  rounded-xl
+                  transition duration-300
+                  font-medium">
             Descargar boletos (PDF)
         </a>
 
-
         <div class="mt-6">
-            <a href="/Rutas/Index" class="text-blue-600 underline">
+            <a href="/Rutas/Index"
+               class="text-blue-600 hover:text-blue-800 underline text-sm sm:text-base">
                 Volver a rutas
             </a>
         </div>
+
     </div>
 
 </body>

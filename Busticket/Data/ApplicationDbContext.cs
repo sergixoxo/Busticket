@@ -28,6 +28,10 @@ namespace Busticket.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Empresa>()
+                .Property(e => e.FechaRegistro)
+                .HasDefaultValueSql("GETUTCDATE()");
+
             // ---------------- TABLAS EN SINGULAR ----------------
             modelBuilder.Entity<Ruta>().ToTable("Ruta");
             modelBuilder.Entity<Empresa>().ToTable("Empresa");
@@ -172,23 +176,26 @@ namespace Busticket.Data
 
             modelBuilder.Entity<IdentityRole>().HasData(
                 new IdentityRole
-                {
-                    Id = adminRoleId,
+            {
+                Id = adminRoleId,
                     Name = "Admin",
-                    NormalizedName = "ADMIN"
-                },
-                new IdentityRole
-                {
-                    Id = clienteRoleId,
+                    NormalizedName = "ADMIN",
+                    ConcurrencyStamp = "2ca686af-face-4aef-aff1-a6f990c5b846"
+            },
+            new IdentityRole
+            {
+                Id = clienteRoleId,
                     Name = "Cliente",
-                    NormalizedName = "CLIENTE"
-                },
-                new IdentityRole
-                {
-                    Id = EmpresaRoleId,
+                    NormalizedName = "CLIENTE",
+                    ConcurrencyStamp = "cceacb20-2f45-4a2f-a1ca-585359e59bdb"
+            },
+            new IdentityRole
+            {
+                Id = EmpresaRoleId,
                     Name = "Empresa",
-                    NormalizedName = "EMPRESA"
-                }
+                    NormalizedName = "EMPRESA",
+                    ConcurrencyStamp = "c3026a58-0ded-44aa-bf93-2e783d4b556c"
+            }
             );
         }
     }

@@ -2,116 +2,132 @@
 
 @{
     Layout = null;
-    <script src="https://cdn.tailwindcss.com"></script>
 }
 
-<header class="py-6">
-    <div class="w-[95%] max-w-[1400px] mx-auto flex items-center justify-between">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
 
-        <div class="text-3xl font-extrabold text-[#284D67] cursor-pointer">
-            <a href="/Home/Index">Busticket</a>
-        </div>
+<body class="bg-gray-50 text-gray-800">
 
-        <div class="flex items-center">
-            <a href="/sapo">
+    <!-- HEADER -->
+    <header class="py-6 bg-white shadow-sm">
+        <div class="w-[95%] max-w-screen-2xl mx-auto flex items-center justify-between">
+
+            <div class="text-2xl sm:text-3xl font-extrabold text-[#284D67]">
+                <a href="/Home/Index">Busticket</a>
+            </div>
+
+            <a href="/Perfil/Index">
                 <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' fill='%23284D67' viewBox='0 0 24 24'><path d='M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.314 0-10 1.657-10 5v3h20v-3c0-3.343-6.686-5-10-5z'/></svg>"
-                     class="w-7 ml-4 cursor-pointer">
+                     class="w-7 cursor-pointer">
             </a>
+
+        </div>
+    </header>
+
+    <!-- CONTENIDO -->
+    <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-12 text-center">
+            Panel de Empresa
+        </h1>
+
+        <!-- BOTONES PRINCIPALES -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-14">
+
+            <a asp-controller="PanelEmpresa" asp-action="Rutas"
+               class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl shadow-md text-center font-semibold transition">
+                Ver Rutas
+            </a>
+
         </div>
 
-    </div>
-</header>
+        <!-- FILTROS -->
+        <div class="bg-white p-6 rounded-xl shadow mb-8">
 
-<div class="max-w-3xl mx-auto mt-16 px-4">
+            <div class="flex flex-col sm:flex-row sm:flex-wrap gap-6 sm:items-end">
 
-    <h1 class="text-4xl font-bold text-gray-800 mb-10 text-center">
-        Panel De Empresa
-    </h1>
+                <div class="flex flex-col">
+                    <label class="text-sm font-semibold text-gray-600 mb-1">Desde</label>
+                    <input type="date" id="fechaInicio"
+                           class="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
 
-    <!-- Tus botones -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-12">
+                <div class="flex flex-col">
+                    <label class="text-sm font-semibold text-gray-600 mb-1">Hasta</label>
+                    <input type="date" id="fechaFin"
+                           class="border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
 
-        <a asp-controller="PanelEmpresa" asp-action="Rutas"
-           class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl shadow-md text-center font-semibold transition">
-            Ver Rutas
-        </a>
+                <button type="button"
+                        onclick="filtrarTabla()"
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                    Filtrar
+                </button>
 
-       
+                <button type="button"
+                        onclick="exportarExcel()"
+                        class="sm:ml-auto bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+                    Descargar Excel
+                </button>
 
-    </div>
-
-        <!-- FILTROS + EXCEL -->
-        <div class="bg-white p-5 rounded-xl shadow mb-6 flex flex-wrap gap-4 items-end">
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-600">Desde</label>
-                <input type="date" id="fechaInicio"
-                       class="border rounded px-3 py-2 text-sm">
             </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-600">Hasta</label>
-                <input type="date" id="fechaFin"
-                       class="border rounded px-3 py-2 text-sm">
-            </div>
-
-            <button type="button"
-                    onclick="filtrarTabla()"
-                    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
-                Filtrar
-            </button>
-
-            <button type="button"
-                    onclick="exportarExcel()"
-                    class="ml-auto bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
-                Descargar Excel
-            </button>
         </div>
 
         <!-- TABLA -->
-        <div class="overflow-x-auto">
-            <table id="tablaVentas"
-                   class="w-full bg-white shadow-md rounded-lg overflow-hidden">
+        <div class="bg-white shadow-lg rounded-xl overflow-hidden">
 
-                <thead class="bg-gray-200 text-gray-700">
-                    <tr>
-                        <th class="px-4 py-2 text-left">Venta ID</th>
-                        <th class="px-4 py-2 text-left">Usuario</th>
-                        <th class="px-4 py-2 text-left">Empresa</th>
-                        <th class="px-4 py-2 text-left">Fecha</th>
-                    </tr>
-                </thead>
-            <tbody>
-                @foreach (var item in Model.Ventas)
-                {
-                    <tr class="border-b hover:bg-gray-50 transition"
-                        data-fecha="@item.Fecha.ToString("yyyy-MM-dd")">
+            <div class="overflow-x-auto">
+                <table id="tablaVentas" class="w-full text-sm text-left">
 
-                        <td class="px-4 py-2">@item.VentaId</td>
+                    <thead class="bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
+                        <tr>
+                            <th class="px-6 py-3">Venta ID</th>
+                            <th class="px-6 py-3">Usuario</th>
+                            <th class="px-6 py-3">Empresa</th>
+                            <th class="px-6 py-3">Fecha</th>
+                        </tr>
+                    </thead>
 
-                        <td class="px-4 py-2">
-                            @item.User?.UserName
-                        </td>
+                    <tbody>
+                        @foreach (var item in Model.Ventas)
+                        {
+                            <tr class="border-t hover:bg-gray-50 transition"
+                                data-fecha="@item.Fecha.ToString("yyyy-MM-dd")">
 
-                        <td class="px-4 py-2">
-                            @item.Empresa?.Nombre
-                        </td>
+                                <td class="px-6 py-4 font-medium">
+                                    @item.VentaId
+                                </td>
 
-                        <td class="px-4 py-2">
-                            @item.Fecha.ToString("dd/MM/yyyy")
-                        </td>
-                    </tr>
-                }
-            </tbody>
+                                <td class="px-6 py-4">
+                                    @item.User?.UserName
+                                </td>
 
+                                <td class="px-6 py-4">
+                                    @item.Empresa?.Nombre
+                                </td>
 
-            </table>
+                                <td class="px-6 py-4">
+                                    @item.Fecha.ToString("dd/MM/yyyy")
+                                </td>
+
+                            </tr>
+                        }
+                    </tbody>
+
+                </table>
+            </div>
+
         </div>
 
     </div>
 
     <script src="~/js/admin.js"></script>
 
-    </div>
-
-</div>
+</body>
+</html>

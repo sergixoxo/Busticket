@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Busticket.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -238,7 +238,7 @@ namespace Busticket.Migrations
                     Pais = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Telefono = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    FechaRegistro = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
                 },
                 constraints: table =>
                 {
@@ -527,6 +527,16 @@ namespace Busticket.Migrations
                         principalTable: "Venta",
                         principalColumn: "VentaId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "543f9a78-123b-4330-80e4-4672y8794549", "c3026a58-0ded-44aa-bf93-2e783d4b556c", "Empresa", "EMPRESA" },
+                    { "543f9a78-295b-4330-80e3-4672e8790089", "cceacb20-2f45-4a2f-a1ca-585359e59bdb", "Cliente", "CLIENTE" },
+                    { "83ca341c-300c-4034-93c6-291771120464", "2ca686af-face-4aef-aff1-a6f990c5b846", "Admin", "ADMIN" }
                 });
 
             migrationBuilder.InsertData(
