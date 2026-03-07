@@ -1,6 +1,7 @@
 ﻿@model Busticket.Models.PerfilViewModel
 @{
     Layout = null;
+    <partial name="_DarkModeScript" />
 }
 
 <!DOCTYPE html>
@@ -11,9 +12,10 @@
     <title>@ViewData["Title"]</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="~/css/ModeDark.css" rel="stylesheet">
 
     <style>
-        * {
+       * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -21,7 +23,9 @@
         }
 
         body {
-            background: #f4f6f8;
+            background: var(--bg-body);
+            color: var(--text-titulo);
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         .perfil {
@@ -34,9 +38,10 @@
         .panel {
             display: flex;
             width: 100%;
-            background: white;
+            background: var(--bg-panel);
+            transition: background 0.3s ease;
         }
-              
+
         .contenido {
             width: 60%;
             padding: 50px 70px;
@@ -44,18 +49,19 @@
 
         .foto-panel {
             width: 40%;
-            background: #e9eef3;
+            background: var(--bg-foto-panel);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 18px;
+            transition: background 0.3s ease;
         }
 
         .logo {
             font-weight: 800;
             font-size: 26px;
-            color: #1d3557;
+            color: var(--text-main);
             margin-bottom: 20px;
         }
 
@@ -63,13 +69,15 @@
             font-size: 30px;
             font-weight: 700;
             margin-bottom: 25px;
+            color: var(--text-titulo);
         }
 
         .card {
-            background: #f7f9fb;
+            background: var(--bg-card);
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 18px;
+            transition: background 0.3s ease;
         }
 
         .card-historial {
@@ -85,28 +93,31 @@
         }
 
         .dato {
-            background: white;
+            background: var(--bg-dato);
             padding: 10px 12px;
             border-radius: 6px;
             font-size: 14px;
+            transition: background 0.3s ease;
         }
 
         .label {
             font-size: 12px;
-            color: #888;
+            color: var(--text-label);
         }
 
         .valor {
             font-weight: 600;
+            color: var(--text-titulo);
         }
 
         .historial-item {
-            background: white;
+            background: var(--bg-dato);
             padding: 12px;
             border-radius: 6px;
             margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
+            transition: background 0.3s ease;
         }
 
         .btn {
@@ -119,6 +130,66 @@
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* --- Estilos del Switch (Checkbox) --- */
+        .theme-switch-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 22px;
+        }
+
+            .switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 16px;
+                width: 16px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                transition: .4s;
+                border-radius: 50%;
+            }
+
+        input:checked + .slider {
+            background-color: #457b9d;
+        }
+
+            input:checked + .slider:before {
+                transform: translateX(24px);
+            }
+
+        #theme-text {
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .foto {
@@ -126,6 +197,7 @@
             height: 180px;
             border-radius: 50%;
             overflow: hidden;
+            border: 4px solid var(--text-main);
         }
 
             .foto img {
@@ -140,44 +212,31 @@
 
         /* ===== RESPONSIVE ===== */
         @@media (max-width: 1024px) {
-
-            .card-historial {
-                max-height: 400px;
-            }
             .panel {
                 flex-direction: column;
             }
 
-            .contenido {
+            .contenido, .foto-panel {
                 width: 100%;
                 padding: 30px 20px;
-            }
-
-            .foto-panel {
-                width: 100%;
-                padding: 30px 20px;
-                order: 0; 
             }
 
             .info {
                 grid-template-columns: 1fr;
             }
-
-            .historial-item {
-                flex-direction: column;
-                gap: 4px;
-            }
         }
-
     </style>
 </head>
-
 <body>
+    <script>
+        // Aplicar tema antes de renderizar para evitar parpadeo
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
 
     <div class="perfil">
-
         <div class="panel">
-
             <div class="contenido">
                 <div class="logo">Busticket</div>
                 <div class="titulo">Mi Perfil</div>
@@ -185,28 +244,23 @@
                 <div class="card">
                     <h3>Información personal</h3>
                     <div class="info">
-
                         <div class="dato">
                             <div class="label">Nombre</div>
                             <div class="valor">@Model.Nombre</div>
                         </div>
-
                         <div class="dato">
                             <div class="label">Correo</div>
                             <div class="valor">@Model.Correo</div>
                         </div>
-
                         <div class="dato">
                             <div class="label">Teléfono</div>
                             <div class="valor">@Model.Telefono</div>
                         </div>
-
                     </div>
                 </div>
 
                 <div class="card card-historial">
                     <h3>Historial de viajes</h3>
-
                     @foreach (var viaje in Model.HistorialViajes)
                     {
                         <div class="historial-item">
@@ -217,32 +271,55 @@
                 </div>
 
                 <div class="card">
-                    <a href="https://caprendizaje.sena.edu.co/sgva/SGVA_Diseno/pag/login.aspx"
-                       target="_blank"
-                       class="btn">Cambiar contraseña</a>
+                    <a href="https://caprendizaje.sena.edu.co/sgva/SGVA_Diseno/pag/login.aspx" target="_blank" class="btn">Cambiar contraseña</a>
+
+                    <div class="theme-switch-container">
+                        <label class="switch">
+                            <input type="checkbox" id="checkboxTheme">
+                            <span class="slider"></span>
+                        </label>
+                        <span id="theme-text">Activar Modo Oscuro</span>
+                    </div>
                 </div>
             </div>
 
             <div class="foto-panel">
                 <div class="foto">
-                    <img id="preview"
-                         src="https://res.cloudinary.com/dbt58u6ag/image/upload/v1771867385/basic_e5v9wv.png" />
+                    <img id="preview" src="https://res.cloudinary.com/dbt58u6ag/image/upload/v1771867385/basic_e5v9wv.png" />
                 </div>
-
                 <label class="btn">
                     Cambiar foto
                     <input type="file" id="inputFoto" accept="image/*" />
                 </label>
             </div>
-
         </div>
-
     </div>
 
     <script>
+        const checkboxTheme = document.getElementById('checkboxTheme');
+        const themeText = document.getElementById('theme-text');
         const inputFoto = document.getElementById('inputFoto');
         const preview = document.getElementById('preview');
 
+        // Función para sincronizar la UI con el tema actual
+        function actualizarInterfaz() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            checkboxTheme.checked = isDark;
+            themeText.innerText = isDark ? "Activar Modo Claro" : "Activar Modo Oscuro";
+        }
+
+        // Ejecutar al cargar la página
+        actualizarInterfaz();
+
+        // Lógica del Checkbox
+        checkboxTheme.addEventListener('change', () => {
+            const newTheme = checkboxTheme.checked ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            actualizarInterfaz();
+        });
+
+        // Cambio de foto
         inputFoto.addEventListener('change', function () {
             const file = this.files[0];
             if (file) {
@@ -252,6 +329,5 @@
             }
         });
     </script>
-
 </body>
 </html>
