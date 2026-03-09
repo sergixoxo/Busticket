@@ -1,0 +1,98 @@
+﻿/* 1. Variables de Colores (Tus definiciones) */
+:root {
+    --bg-body: #f4f6f8;
+    --bg-panel: white;
+    --bg-card: #f7f9fb;
+    --bg-dato: white;
+    --text-main: #1d3557;
+    --text-titulo: #000000;
+    --text-label: #888;
+    --bg-foto-panel: #e9eef3;
+}
+
+[data-theme="dark"] {
+    --bg-body: #121212;
+    --bg-panel: #1e1e1e;
+    --bg-card: #2a2a2a;
+    --bg-dato: #333333;
+    --text-main: #a8dadc;
+    --text-titulo: #ffffff;
+    --text-label: #bbb;
+    --bg-foto-panel: #252525;
+}
+
+/* 2. Aplicación a elementos globales */
+body {
+    background-color: var(--bg-body) !important;
+    color: var(--text-titulo);
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* 3. Estilos para componentes (Card, Paneles, etc) */
+.card, .panel, .contenido {
+    background-color: var(--bg-panel) !important;
+    color: var(--text-titulo);
+}
+
+.dato, .historial-item {
+    background-color: var(--bg-dato) !important;
+}
+
+h1, h2, h3, h4, .titulo {
+    color: var(--text-titulo);
+}
+
+.label {
+    color: var(--text-label);
+}
+
+/* 4. Estilos para Inputs y formularios */
+input, select, textarea {
+    background-color: var(--bg-dato);
+    color: var(--text-titulo);
+    border: 1px solid var(--text-label);
+}
+/* Esto afecta a TODO, sin importar el nombre de la clase */
+body,
+div:not(.no-dark),
+span,
+p,
+h1, h2, h3, h4, h5, h6,
+a:not(.btn) {
+    color: var(--text-titulo) !important;
+    transition: color 0.3s ease;
+}
+
+/* Para los iconos o logos que usan color de texto */
+.logo, i, svg {
+    color: var(--text-main) !important;
+}
+/* Esto busca cualquier icono o botón de menú y cambia su color en modo oscuro */
+[data-theme="dark"] .navbar-toggler-icon,
+[data-theme="dark"] .menu-hamburguesa,
+[data-theme="dark"] .hamburger-icon {
+    filter: invert(1) brightness(2); /* Convierte lo negro en blanco */
+}
+
+/* Si usas un checkbox para el menú (típico en responsive sin JS) */
+[data-theme="dark"] .btn-menu span {
+    background-color: var(--text-titulo) !important;
+}
+
+/* Asegura que el fondo del menú desplegable también cambie */
+@media (max-width: 1024px) {
+    .nav-menu, .menu-desplegable {
+        background-color: var(--bg-panel) !important;
+        border-top: 1px solid var(--text-label);
+    }
+}
+/* Esto obligará a que el icono de hamburguesa sea blanco en modo oscuro */
+[data-theme="dark"] #menuBtn {
+    color: var(--text-titulo) !important;
+}
+
+/* Si el botón está dentro de un header con fondo oscuro, 
+   aseguramos que resalte */
+#menuBtn {
+    transition: color 0.3s ease;
+}

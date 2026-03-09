@@ -1,0 +1,9 @@
+﻿<script>
+    // Este script debe estar al principio para evitar el parpadeo blanco
+    (function() {
+        const theme = localStorage.getItem('theme') || 'light';
+        if (theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    })();
+</script>
