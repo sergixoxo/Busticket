@@ -11,7 +11,7 @@ namespace Busticket.DTOs
         public int RutaId { get; set; }
     }
 
-    public class AgregarCarritoDto
+    public class EmailService
     {
         public int RutaId { get; set; }
         public List<CarritoItem> Asientos { get; set; }

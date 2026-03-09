@@ -113,6 +113,21 @@
                 Selección de asiento
             </h2>
 
+            <!-- LEYENDA -->
+            <div class="flex flex-wrap gap-6 mb-6 text-sm justify-center">
+                <span class="flex items-center gap-2">
+                    <span ></span> Ventana 🪟
+                </span>
+             
+            
+                <span class="flex items-center gap-2">
+                    <span class="w-4 h-4 bg-yellow-300 rounded"></span> Reservado
+                </span>
+                <span class="flex items-center gap-2">
+                    <span class="w-4 h-4 bg-red-300 rounded"></span> Ocupado
+                </span>
+            </div>
+
             @{
                 var asientos = Model.Asientos.ToList();
                 int columnas = 5;
@@ -129,9 +144,10 @@
                         {
                             var asiento = asientos[index];
 
-                            string clase;
+                            string clase = "";
                             bool disabled = false;
 
+                            // ESTADO
                             if (!asiento.Disponible)
                             {
                                 clase = "bg-red-300 text-red-800 cursor-not-allowed";
@@ -147,11 +163,41 @@
                                 clase = "bg-white border border-[#c9a24d] text-[#8a6b2e] hover:bg-[#c9a24d] hover:text-white";
                             }
 
-                            <button class="asiento w-12 h-12 rounded-md font-semibold @clase"
+                            // POSICIÓN
+                            string posicion = "";
+                            string icono = "";
+                            string etiqueta = "";
+
+                            if (fila == 0)
+                            {
+                                posicion = "Cerca a ventana";
+                                icono = "🪟";
+                              
+                            }
+                        
+
+                            <button class="asiento w-12 h-12 rounded-md font-semibold relative @clase"
+                                    title="@posicion"
                                     data-id="@asiento.AsientoId"
                                     data-codigo="@asiento.Numero"
                                     @(disabled ? "disabled" : "")>
+
                                 @asiento.Numero
+
+                                @if (!string.IsNullOrEmpty(icono))
+                                {
+                                    <span class="absolute -top-2 -right-2 text-xs">
+                                        @icono
+                                    </span>
+                                }
+
+                                @if (!string.IsNullOrEmpty(etiqueta))
+                                {
+                                    <span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-orange-600 font-bold">
+                                        @etiqueta
+                                    </span>
+                                }
+
                             </button>
                         }
                     }
@@ -159,8 +205,8 @@
             }
 
             <!-- PASILLO -->
-            <div class="text-center my-4 text-xs tracking-widest text-slate-400">
-                ───────── PASILLO ─────────
+            <div class="text-center my-4 text-xs tracking-widest text-yellow-500 font-semibold">
+                Entrada ─────────────────── PASILLO ─────────
             </div>
 
             <!-- FILAS INFERIORES -->
@@ -174,7 +220,7 @@
                         {
                             var asiento = asientos[index];
 
-                            string clase;
+                            string clase = "";
                             bool disabled = false;
 
                             if (!asiento.Disponible)
@@ -192,16 +238,48 @@
                                 clase = "bg-white border border-[#c9a24d] text-[#8a6b2e] hover:bg-[#c9a24d] hover:text-white";
                             }
 
-                            <button class="asiento w-12 h-12 rounded-md font-semibold @clase"
+                            string posicion = "";
+                            string icono = "";
+                            string etiqueta = "";
+
+                            if (fila == 3)
+                            {
+                                posicion = "Cerca a ventana";
+                                icono = "🪟";
+                         
+                            }
+                           
+
+                       
+
+                            <button class="asiento w-12 h-12 rounded-md font-semibold relative @clase"
+                                    title="@posicion"
                                     data-id="@asiento.AsientoId"
                                     data-codigo="@asiento.Numero"
                                     @(disabled ? "disabled" : "")>
+
                                 @asiento.Numero
+
+                                @if (!string.IsNullOrEmpty(icono))
+                                {
+                                    <span class="absolute -top-2 -right-2 text-xs">
+                                        @icono
+                                    </span>
+                                }
+
+                                @if (!string.IsNullOrEmpty(etiqueta))
+                                {
+                                    <span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-orange-600 font-bold">
+                                        @etiqueta
+                                    </span>
+                                }
+
                             </button>
                         }
                     }
                 </div>
             }
+
         </section>
 
         <!-- RESUMEN -->

@@ -23,7 +23,7 @@ namespace Busticket.Controllers
         // ===============================
         [HttpPost("Agregar")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Agregar([FromBody] AgregarCarritoDto dto)
+        public async Task<IActionResult> Agregar([FromBody] EmailService dto)
         {
             if (dto == null || dto.Asientos == null || !dto.Asientos.Any())
             {

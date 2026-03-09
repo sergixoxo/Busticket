@@ -297,6 +297,28 @@ namespace Busticket.Controllers
             });
 
             var bytes = pdf.GeneratePdf();
+
+            // 📧 Enviar boleto por correo
+            var emailService = HttpContext.RequestServices
+                .GetRequiredService<Busticket.Services.EmailService>();
+
+            await emailService.EnviarBoletoAsync(
+                venta.User.Email,
+                "🎫 Tu boleto de viaje - Busticket",
+                $@"
+        <h3>¡Gracias por tu compra!</h3>
+        <p><b>Empresa:</b> {venta.Ruta.Empresa.Nombre}</p>
+        <p><b>Asientos:</b> {string.Join(", ", venta.Boletos.Select(b => b.Asiento.Numero))}</p>
+        <p><b>Total:</b> {venta.Total:N0} COP</p>
+        <p>Adjunto encontrarás tu boleto en PDF con el código QR.</p>
+        <br/>
+        <small>Busticket © {DateTime.Now.Year}</small>
+    ",
+                bytes,
+                $"Boleto_{venta.VentaId}.pdf"
+            );
+
+            // 📄 Descargar PDF en navegador
             return File(bytes, "application/pdf", $"Boleto_{ventaId}.pdf");
         }
     }
