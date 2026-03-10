@@ -187,27 +187,38 @@
                 @foreach (var ruta in Model)
                 {
                     <article class="group bg-white rounded-2xl p-4 sm:p-5 shadow-sm
-                                    transition-all duration-300 hover:shadow-xl hover:-translate-y-1
-                                    cursor-pointer"
+                   transition-all duration-300 hover:shadow-xl hover:-translate-y-1
+                   cursor-pointer"
                              data-id="@ruta.RutaId"
-                             data-origen-lat="@ruta.CiudadOrigen.Lat"
-                             data-origen-lng="@ruta.CiudadOrigen.Lng"
-                             data-destino-lat="@ruta.CiudadDestino.Lat"
-                             data-destino-lng="@ruta.CiudadDestino.Lng"
+                             data-origen-lat="@ruta.CiudadOrigen?.Lat"
+                             data-origen-lng="@ruta.CiudadOrigen?.Lng"
+                             data-destino-lat="@ruta.CiudadDestino?.Lat"
+                             data-destino-lng="@ruta.CiudadDestino?.Lng"
                              onclick="location.href='/Rutas/Info/@ruta.RutaId'">
 
                         <div class="flex flex-col sm:flex-row gap-4 sm:gap-5 sm:items-center">
 
-                            <img src="@(ruta.ImagenUrl ?? $"https://picsum.photos/seed/{ruta.RutaId}/300/200")"
+                            <img src="@(string.IsNullOrEmpty(ruta.ImagenUrl)
+                                                     ? $"https://picsum.photos/seed/{ruta.RutaId}/300/200"
+                                                     : ruta.ImagenUrl)"
                                  class="w-full sm:w-36 h-40 sm:h-24 rounded-xl object-cover
-                                        transition-transform duration-500 group-hover:scale-105" />
+                        transition-transform duration-500 group-hover:scale-105" />
 
                             <div class="flex-grow">
                                 <p class="font-semibold text-gray-900">
-                                    @ruta.CiudadOrigen.Nombre — @ruta.CiudadDestino.Nombre
+                                    @ruta.CiudadOrigen?.Nombre — @ruta.CiudadDestino?.Nombre
                                 </p>
+
                                 <p class="text-sm text-gray-500">
-                                    @ruta.Empresa.Nombre · @ruta.DuracionMin min
+                                    @ruta.Empresa?.Nombre · @ruta.DuracionMin min
+                                </p>
+
+                                <p class="text-xs text-gray-400">
+                                    Salida: @ruta.FechaSalida.ToString("dd/MM/yyyy HH:mm")
+                                </p>
+
+                                <p class="text-xs text-gray-400">
+                                    Llegada: @ruta.FechaLlegada.ToString("dd/MM/yyyy HH:mm")
                                 </p>
                             </div>
 
@@ -215,8 +226,10 @@
                                 <p class="text-lg font-semibold text-gray-900">
                                     $@ruta.Precio.ToString("N0")
                                 </p>
+
                                 <p class="text-xs text-gray-400">COP</p>
                             </div>
+
                         </div>
                     </article>
                 }

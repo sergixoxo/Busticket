@@ -228,6 +228,10 @@
     </style>
 </head>
 <body>
+    <button onclick="history.back()"
+            class="bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold hover:bg-slate-700 transition mb-5">
+        ← Volver
+    </button>
     <script>
         // Aplicar tema antes de renderizar para evitar parpadeo
         if (localStorage.getItem('theme') === 'dark') {
@@ -271,8 +275,7 @@
                 </div>
 
                 <div class="card">
-                    <a href="https://caprendizaje.sena.edu.co/sgva/SGVA_Diseno/pag/login.aspx" target="_blank" class="btn">Cambiar contraseña</a>
-
+               
                     <div class="theme-switch-container">
                         <label class="switch">
                             <input type="checkbox" id="checkboxTheme">

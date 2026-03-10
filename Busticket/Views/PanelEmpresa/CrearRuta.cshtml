@@ -1,13 +1,13 @@
 ﻿@model Busticket.Models.Ruta
 @{
-    Layout = "_Layout";
+    Layout = null;
 }
 
 <div class="max-w-3xl mx-auto mt-10 bg-white p-6 rounded-xl shadow-md">
     <h1 class="text-3xl font-bold mb-6">Crear Nueva Ruta</h1>
 
     @if (TempData["ErrorMessage"] != null)
-    {
+    {   
         <div class="text-red-600 mb-4 font-semibold">
             @TempData["ErrorMessage"]
         </div>

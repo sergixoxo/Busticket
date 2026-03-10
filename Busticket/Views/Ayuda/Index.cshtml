@@ -3,7 +3,7 @@
     
 }
 <partial name="_DarkModeScript" />
-
+<script src="https://cdn.tailwindcss.com"></script>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -92,7 +92,10 @@
 </head>
 
 <body>
-
+    <button onclick="history.back()"
+            class="bg-slate-900 text-white px-4 py-2 rounded-lg font-semibold hover:bg-slate-700 transition mb-5">
+        ← Volver
+    </button>
     <div class="container">
         <div class="title">Centro de Ayuda</div>
 
@@ -134,8 +137,8 @@
                 Escríbenos y nuestro equipo de soporte te ayudará lo antes posible.
             </p>
 
-            <a href="mailto:soporte@busticket.com" class="btn">
-                Contactar soporte
+            <a href="https://wa.me/573196328638?text=Hola%20necesito%20ayuda%20con%20Busticket" target="_blank" class="btn">
+                Contactar soporte por WhatsApp
             </a>
         </div>
     </div>
