@@ -4,11 +4,14 @@ namespace Busticket.Controllers
 {
     public class ErrorController : Controller
     {
-        [Route("Error/HttpStatus")]
+        [Route("Error/HttpStatus/{code}")]
         public IActionResult HttpStatus(int code)
         {
             if (code == 404)
                 return View("~/Views/Shared/404.cshtml");
+
+            if (code == 403)
+                return View("~/Views/Shared/403.cshtml");
 
             return View("~/Views/Shared/Error.cshtml");
         }

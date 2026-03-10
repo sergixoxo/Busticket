@@ -38,6 +38,12 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 QuestPDF.Settings.License = LicenseType.Community;
+
+builder.Services.AddTransient<Busticket.Services.EmailService>();
+
+
+
+
 var app = builder.Build();
 
 // ===============================
@@ -48,9 +54,9 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Error/Error500");
+    app.UseStatusCodePagesWithReExecute("/Error/HttpStatus/{0}");
     app.UseHsts();
 }
-
 app.UseHttpsRedirection();
 app.UseDeveloperExceptionPage();
 // ===============================
