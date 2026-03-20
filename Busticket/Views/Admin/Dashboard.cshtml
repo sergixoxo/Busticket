@@ -1,0 +1,124 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<link rel="stylesheet" href="~/css/dashboard.css">
+
+<div class="dashboard-container">
+
+    <h1 style="font-size:42px; font-weight:800; text-align:center; margin-bottom:50px; color:#2c3e50;">
+        Dashboard Administrativo
+    </h1>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3 style="font-size:13px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Usuarios</h3>
+            <p>@ViewBag.TotalClientes</p>
+        </div>
+
+        <div class="card">
+            <h3 style="font-size:13px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Empresas Asociadas</h3>
+            <p>@ViewBag.TotalEmpresas</p>
+        </div>
+
+        <div class="card">
+            <h3 style="font-size:13px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Rutas Disponibles</h3>
+            <p>@ViewBag.TotalRutas</p>
+        </div>
+
+        <div class="card">
+            <h3 style="font-size:13px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Ventas Totales</h3>
+            <p>@ViewBag.TotalVentas</p>
+        </div>
+
+        <div class="card">
+            <h3 style="font-size:13px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:1px;">Boletos Generados</h3>
+            <p>@ViewBag.TotalBoletos</p>
+        </div>
+
+    </div>
+
+    <div class="charts">
+
+        <div class="chart-card">
+            <h2 style="font-size:20px; font-weight:700; margin-bottom:20px; color:#2c3e50; border-left:4px solid #3498db; padding-left:12px;">
+                Datos generales del sistema
+            </h2>
+
+            <canvas id="barChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+            <h2 style="font-size:20px; font-weight:700; margin-bottom:20px; color:#2c3e50; border-left:4px solid #3498db; padding-left:12px;">
+                Relación Usuarios vs Ventas
+            </h2>
+
+            <canvas id="pieChart"></canvas>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    new Chart(document.getElementById('barChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Usuarios', 'Empresas', 'Rutas', 'Ventas', 'Boletos'],
+            datasets: [{
+                data: [
+                    @ViewBag.TotalClientes,
+                    @ViewBag.TotalEmpresas,
+                    @ViewBag.TotalRutas,
+                    @ViewBag.TotalVentas,
+                    @ViewBag.TotalBoletos
+                ],
+    backgroundColor: [
+        'rgba(52, 152, 219, 0.6)',
+        'rgba(46, 204, 113, 0.6)',
+        'rgba(243, 156, 18, 0.6)',
+        'rgba(231, 76, 60, 0.6)', 
+        'rgba(155, 89, 182, 0.6)'  
+    ],
+    borderColor: [
+        'rgba(41, 128, 185, 1)',
+        'rgba(39, 174, 96, 1)',
+        'rgba(211, 84, 0, 1)',
+        'rgba(192, 57, 43, 1)',
+        'rgba(142, 68, 173, 1)'
+    ],
+    borderWidth: 2,
+    borderRadius: 8
+
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('pieChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Usuarios', 'Ventas'],
+            datasets: [{
+                data: [
+                    @ViewBag.TotalClientes,
+                    @ViewBag.TotalVentas
+                ],
+                backgroundColor: [
+                    '#3498db',
+                    '#e74c3c'
+                ]
+            }]
+        },
+        options: {
+            cutout: '70%'
+        }
+    });
+</script>

@@ -189,5 +189,16 @@ namespace Busticket.Controllers
             TempData["SuccessMessage"] = "Ruta eliminada correctamente.";
             return RedirectToAction("Rutas");
         }
+
+        public IActionResult Dashboard()
+        {
+            ViewBag.TotalClientes = _context.Users.Count();
+            ViewBag.TotalEmpresas = _context.Empresa.Count();
+            ViewBag.TotalRutas = _context.Ruta.Count();
+            ViewBag.TotalVentas = _context.Venta.Count();
+            ViewBag.TotalBoletos = _context.Boleto.Count();
+
+            return View();
+        }
     }
 }

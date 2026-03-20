@@ -113,7 +113,8 @@
         </h1>
 
         <!-- BOTONES -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-12">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-12">
+
             <a asp-controller="Admin" asp-action="Rutas"
                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl shadow-md text-center font-semibold transition">
                 Ver Rutas
@@ -123,7 +124,14 @@
                class="bg-green-600 hover:bg-green-700 text-white px-6 py-4 rounded-xl shadow-md text-center font-semibold transition">
                 Ver Empresa
             </a>
+
+            <a asp-controller="Admin" asp-action="Dashboard"
+               class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-4 rounded-xl shadow-md text-center font-semibold transition">
+                Ver Dashboard
+            </a>
+
         </div>
+
 
         <!-- FILTROS + EXCEL -->
         <div class="bg-white p-5 rounded-xl shadow mb-6 flex flex-wrap gap-4 items-end">
