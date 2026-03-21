@@ -1,4 +1,4 @@
-﻿using Busticket.Data;
+using Busticket.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +30,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Auth/Login";
     options.AccessDeniedPath = "/Auth/Login";
-    options.SlidingExpiration = true;
+  options.ExpireTimeSpan = TimeSpan.FromMinutes(1); // ⏱ tiempo de sesión
+
+  options.SlidingExpiration = true;
 });
 
 // ===============================
@@ -85,5 +87,9 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
 );
-
+using (var scope = app.Services.CreateScope())
+{
+  var services = scope.ServiceProvider;
+  await IdentitySeeder.SeedRolesAndAdmin(services);
+}
 app.Run();
