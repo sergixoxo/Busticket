@@ -72,7 +72,78 @@ namespace Busticket.Controllers
             ViewBag.Ciudades = _context.Ciudad.ToList();
             return View(new Ruta());
         }
+        [HttpGet]
+        public async Task<IActionResult> EditarRuta(int id)
+        {
+            var ruta = await _context.Ruta.FindAsync(id);
 
+            if (ruta == null)
+                return NotFound();
+
+            ViewBag.Ciudades = _context.Ciudad.ToList();
+            ViewBag.Empresas = _context.Empresa.ToList();
+
+            return View(ruta);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditarRuta(Ruta ruta)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Ciudades = _context.Ciudad.ToList();
+                ViewBag.Empresas = _context.Empresa.ToList();
+                return View(ruta);
+            }
+
+            _context.Ruta.Update(ruta);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Ruta actualizada correctamente";
+
+            return RedirectToAction("Rutas");
+        }
+
+
+        // GET
+        [HttpGet]
+        public async Task<IActionResult> EliminarRuta(int id)
+        {
+            var ruta = await _context.Ruta
+                .Include(r => r.CiudadOrigen)
+                .Include(r => r.CiudadDestino)
+                .FirstOrDefaultAsync(r => r.RutaId == id);
+
+            if (ruta == null)
+                return NotFound();
+
+            return View(ruta);
+        }
+
+        // POST
+
+        [HttpPost, ActionName("EliminarRuta")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmarEliminarRuta(int RutaId)
+        {
+            var ruta = await _context.Ruta.FindAsync(RutaId);
+
+            if (ruta == null)
+                return RedirectToAction("Rutas");
+
+            // 🔥 ELIMINAR ASIENTOS PRIMERO
+            var asientos = _context.Asiento.Where(a => a.RutaId == RutaId);
+            _context.Asiento.RemoveRange(asientos);
+
+            // Luego eliminar la ruta
+            _context.Ruta.Remove(ruta);
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Ruta eliminada correctamente";
+
+            return RedirectToAction("Rutas");
+        }
         // CREAR RUTA POST
         [HttpPost]
         [ValidateAntiForgeryToken]

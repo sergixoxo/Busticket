@@ -1,0 +1,31 @@
+@model Busticket.Models.Ruta
+
+@{
+    Layout = "_Layout";
+}
+
+<div class="max-w-2xl mx-auto mt-10 bg-white p-6 rounded-xl shadow-md">
+    <h1 class="text-3xl font-bold mb-6 text-red-600">Eliminar Ruta</h1>
+
+    <p class="mb-4">
+        ¿Está seguro que desea eliminar la ruta de
+        <strong>@Model.CiudadOrigen?.Nombre</strong> a
+        <strong>@Model.CiudadDestino?.Nombre</strong>?
+    </p>
+
+    <form asp-action="EliminarRuta" method="post">
+        <input type="hidden" asp-for="RutaId" />
+
+        <div class="flex justify-end gap-2">
+            <a asp-action="Rutas"
+               class="bg-gray-500 text-white px-5 py-2 rounded hover:bg-gray-600">
+                Cancelar
+            </a>
+
+            <button type="submit"
+                    class="bg-red-600 text-white px-5 py-2 rounded hover:bg-red-700">
+                Eliminar
+            </button>
+        </div>
+    </form>
+</div>

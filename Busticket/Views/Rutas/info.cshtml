@@ -24,84 +24,167 @@
 <body class="bg-gradient-to-br from-slate-100 via-zinc-100 to-slate-200 text-slate-800">
 
     <!-- HEADER -->
-    <header class="sticky top-0 z-50 bg-white/70 backdrop-blur-xl border-b shadow-sm">
-        <div class="max-w-7xl mx-auto px-10 py-6 flex justify-between items-center">
+    <header class="absolute top-0 inset-x-0 z-50">
+        <div class="max-w-7xl mx-auto px-10 py-6
+                flex items-center justify-between
+                text-black">
 
-            <a href="/Home/Index" class="tracking-[0.35em] uppercase font-semibold">
-                Busticket
-            </a>
+            <!-- IZQUIERDA -->
+            <div class="flex items-center gap-6">
 
-            <div class="flex gap-8 items-center text-xs uppercase tracking-widest">
-
-                <a href="/Ayuda" class="hidden md:block">Ayuda</a>
-
-                @if (User.Identity!.IsAuthenticated)
+                <!-- BOTÓN VOLVER -->
+                @if (Context.Request.Path != "/Home/Index")
                 {
+                    <button onclick="history.back()"
+                            class="flex items-center gap-2 text-sm tracking-widest uppercase
+                                   opacity-80 hover:opacity-100 transition group">
+
+                        <!-- ICONO FLECHA SVG -->
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                             class="w-5 h-5 transform group-hover:-translate-x-1 transition duration-300"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15 19l-7-7 7-7" />
+                        </svg>
+
+                        Volver
+                    </button>
+                }
+
+                <!-- LOGO -->
+                <a href="/Home/Index"
+                   class="text-2xl tracking-widest uppercase font-semibold">
+                    Busticket
+                </a>
+
+            </div>
+
+            <!-- DERECHA -->
+            <div class="flex gap-10 text-sm tracking-widest uppercase items-center">
+
+                <!-- AYUDA -->
+                <a href="/Ayuda"
+                   class="relative
+                      after:content-[''] after:absolute after:left-0 after:-bottom-1
+                      after:w-0 after:h-[1px] after:bg-black
+                      after:transition-all after:duration-300
+                      hover:after:w-full">
+                    Ayuda
+                </a>
+
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <!-- PERFIL -->
                     <a href="/Perfil"
-                       class="w-9 h-9 flex items-center justify-center rounded-full border">
+                       title="Mi cuenta"
+                       class="flex items-center justify-center w-10 h-10
+                              rounded-full border border-black
+                              hover:bg-black hover:text-white transition">
                         👤
                     </a>
 
-                    <!-- CARRITO -->
-                    <div class="relative">
-                        <button id="btnCarrito">
-                            <i class="fa fa-shopping-cart text-lg"></i>
+                    <!-- LOGOUT -->
+                    <form asp-controller="Auth"
+                          asp-action="Logout"
+                          method="post"
+                          class="inline">
+                        <button type="submit"
+                                class="relative
+                                       after:content-[''] after:absolute after:left-0 after:-bottom-1
+                                       after:w-0 after:h-[1px] after:bg-black
+                                       after:transition-all after:duration-300
+                                       hover:after:w-full">
+                            Cerrar sesión
                         </button>
-
-                        <div id="dropdownCarrito"
-                             class="hidden absolute right-0 mt-3 w-72 bg-white rounded-2xl p-5 shadow-xl z-50">
-
-                            <h3 class="text-xs tracking-widest uppercase text-slate-500 mb-3">
-                                Carrito
-                            </h3>
-
-                            @{
-                                var carrito = Context.Session
-                                .GetObjectFromJson<List<Busticket.DTOs.CarritoItem>>("Carrito")
-                                ?? new();
-                            }
-
-                            <ul id="listaCarrito" class="space-y-2 text-sm">
-                                @if (!carrito.Any())
-                                {
-                                    <li class="text-center text-slate-400 text-xs">
-                                        Carrito vacío
-                                    </li>
-                                }
-                                else
-                                {
-                                    @foreach (var item in carrito)
-                                    {
-                                        <li class="flex justify-between border-b pb-1" data-id="@item.AsientoId">
-                                            <span>Asiento @item.Codigo</span>
-                                            <button class="text-red-500 text-xs" onclick="eliminarAsiento(@item.AsientoId)">❌</button>
-                                        </li>
-                                    }
-                                }
-                            </ul>
-
-                            <p class="mt-4 text-right text-sm font-semibold">
-                                Total:
-                                <span id="totalCarrito">
-                                    @(carrito.Sum(a => a.Precio).ToString("N0"))
-                                </span> COP
-                            </p>
-
-                            <a href="/Pago/Index"
-                               class="block mt-4 text-center bg-slate-900 text-white py-2 rounded-full text-xs">
-                                Finalizar compra
-                            </a>
-                        </div>
-                    </div>
-
-                    <form asp-controller="Auth" asp-action="Logout" method="post">
-                        <button>Cerrar sesión</button>
                     </form>
                 }
                 else
                 {
-                    <a href="/Auth/Login">Iniciar sesión</a>
+                    <!-- LOGIN -->
+                    <a href="/Auth/Login"
+                       class="relative
+                              after:content-[''] after:absolute after:left-0 after:-bottom-1
+                              after:w-0 after:h-[1px] after:bg-black
+                              after:transition-all after:duration-300
+                              hover:after:w-full">
+                        Iniciar sesión
+                    </a>
                 }
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <a href="/Admin/Index"
+                       class="relative
+                              after:content-[''] after:absolute after:left-0 after:-bottom-1
+                              after:w-0 after:h-[1px] after:bg-black
+                              after:transition-all after:duration-300
+                              hover:after:w-full">
+                        Admin
+                    </a>
+                }
+
+                @if (User.IsInRole("Empresa"))
+                {
+                    <a href="/Empresa/Dashboard"
+                       class="relative
+                              after:content-[''] after:absolute after:left-0 after:-bottom-1
+                              after:w-0 after:h-[1px] after:bg-black
+                              after:transition-all after:duration-300
+                              hover:after:w-full">
+                        Empresa
+                    </a>
+                }
+
+            </div>
+            <div class="relative">
+                <button id="btnCarrito">
+                    <i class="fa fa-shopping-cart text-lg"></i>
+                </button>
+
+                <div id="dropdownCarrito"
+                     class="hidden absolute right-0 mt-3 w-72 bg-white rounded-2xl p-5 shadow-xl z-50">
+
+                    <h3 class="text-xs tracking-widest uppercase text-slate-500 mb-3">
+                        Carrito
+                    </h3>
+
+                    @{
+                        var carrito = Context.Session
+                        .GetObjectFromJson<List<Busticket.DTOs.CarritoItem>>("Carrito")
+                        ?? new();
+                    }
+
+                    <ul id="listaCarrito" class="space-y-2 text-sm">
+                        @if (!carrito.Any())
+                        {
+                            <li class="text-center text-slate-400 text-xs">
+                                Carrito vacío
+                            </li>
+                        }
+                        else
+                        {
+                            @foreach (var item in carrito)
+                            {
+                                <li class="flex justify-between border-b pb-1" data-id="@item.AsientoId">
+                                    <span>Asiento @item.Codigo</span>
+                                    <button class="text-red-500 text-xs" onclick="eliminarAsiento(@item.AsientoId)">❌</button>
+                                </li>
+                            }
+                        }
+                    </ul>
+
+                    <p class="mt-4 text-right text-sm font-semibold">
+                        Total:
+                        <span id="totalCarrito">
+                            @(carrito.Sum(a => a.Precio).ToString("N0"))
+                        </span> COP
+                    </p>
+
+                    <a href="/Pago/Index"
+                       class="block mt-4 text-center bg-slate-900 text-white py-2 rounded-full text-xs">
+                        Finalizar compra
+                    </a>
+                </div>
             </div>
         </div>
     </header>
@@ -383,31 +466,80 @@
             });
         });
 
-            document.getElementById("agregarCarrito").addEventListener("click", async () => {
+        document.getElementById("agregarCarrito").addEventListener("click", async () => {
 
-                if (asientosSeleccionados.length === 0) {
-                    Swal.fire("Atención", "Selecciona al menos un asiento", "warning");
-                    return;
-                }
+            if (asientosSeleccionados.length === 0) {
+                Swal.fire("Atención", "Selecciona al menos un asiento", "warning");
+                return;
+            }
 
-                const token = document.querySelector(
-                    'input[name="__RequestVerificationToken"]'
-                ).value;
+            const token = document.querySelector(
+                'input[name="__RequestVerificationToken"]'
+            ).value;
 
-                await fetch("/Carrito/Agregar", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "RequestVerificationToken": token
-                    },
-                    body: JSON.stringify({
-                        RutaId: @Model.Ruta.RutaId,
-                        Asientos: asientosSeleccionados
-                    })
-                });
-
-                location.reload();
+            const res = await fetch("/Carrito/Agregar", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": token
+                },
+                body: JSON.stringify({
+                    RutaId: @Model.Ruta.RutaId,
+                    Asientos: asientosSeleccionados
+                })
             });
+
+            if (!res.ok) {
+                Swal.fire("Error", "No se pudo agregar al carrito", "error");
+                return;
+            }
+
+            const data = await res.json();
+
+            // 🔥 TOAST PRO
+            Swal.fire({
+                toast: true,
+                position: "top-end",
+                icon: "success",
+                title: "Asientos agregados 🛒",
+                showConfirmButton: false,
+                timer: 2000
+            });
+
+            // 🔥 ACTUALIZAR LISTA CARRITO
+            const lista = document.getElementById("listaCarrito");
+
+            if (lista.innerText.includes("Carrito vacío")) {
+                lista.innerHTML = "";
+            }
+
+            asientosSeleccionados.forEach(a => {
+                const li = document.createElement("li");
+                li.className = "flex justify-between border-b pb-1";
+                li.setAttribute("data-id", a.AsientoId);
+
+                li.innerHTML = `
+                    <span>Asiento ${a.Codigo}</span>
+                    <button class="text-red-500 text-xs" onclick="eliminarAsiento(${a.AsientoId})">❌</button>
+                `;
+
+                lista.appendChild(li);
+            });
+
+            // 🔥 ACTUALIZAR TOTAL
+            document.getElementById("totalCarrito").textContent =
+                data.total.toLocaleString();
+
+            // 🔥 LIMPIAR SELECCIÓN VISUAL
+            asientosSeleccionados = [];
+            document.getElementById("total").textContent = "0";
+
+            document.querySelectorAll(".asiento.bg-slate-900").forEach(btn => {
+                btn.classList.remove("bg-slate-900", "text-white");
+                btn.classList.add("bg-white", "border", "border-[#c9a24d]", "text-[#8a6b2e]");
+            });
+
+        });
 
         })();
     </script>
@@ -432,7 +564,7 @@
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "RequestVerificationToken": token
+                    "RequestVerificationToken": token   
                 },
                 body: JSON.stringify({ asientoId })
             });

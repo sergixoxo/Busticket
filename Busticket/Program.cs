@@ -25,16 +25,14 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
 // ===============================
 // COOKIE CONFIG (IDENTITY)
-// ===============================
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Auth/Login";
     options.AccessDeniedPath = "/Auth/Login";
-  options.ExpireTimeSpan = TimeSpan.FromMinutes(1); // ⏱ tiempo de sesión
 
-  options.SlidingExpiration = true;
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(30); 
+    options.SlidingExpiration = true; 
 });
-
 // ===============================
 builder.Services.AddAuthorization();
 builder.Services.AddControllersWithViews();

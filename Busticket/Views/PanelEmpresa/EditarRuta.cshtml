@@ -10,8 +10,7 @@
     {
         <div class="text-red-600 mb-2">@TempData["ErrorMessage"]</div>
     }
-
-    <form asp-controller="Admin" asp-action="EditarRuta" method="post" class="space-y-4">
+    <form asp-controller="PanelEmpresa" asp-action="EditarRuta" method="post">
         <input type="hidden" asp-for="RutaId" />
 
         <!-- Ciudad Origen -->
