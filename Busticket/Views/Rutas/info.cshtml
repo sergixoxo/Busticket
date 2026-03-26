@@ -150,8 +150,8 @@
 
                     @{
                         var carrito = Context.Session
-                        .GetObjectFromJson<List<Busticket.DTOs.CarritoItem>>("Carrito")
-                        ?? new();
+                        .GetObjectFromJson<List<Busticket.Models.CarritoItem>>("Carrito")
+                        ?? new List<Busticket.Models.CarritoItem>();
                     }
 
                     <ul id="listaCarrito" class="space-y-2 text-sm">

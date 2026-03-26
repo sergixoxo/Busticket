@@ -9,6 +9,7 @@ namespace Busticket.Models
         [Key]
         public int BoletoId { get; set; }
 
+        // 🔗 RELACIONES
         public int VentaId { get; set; }
         public required Venta Venta { get; set; }
 
@@ -21,11 +22,14 @@ namespace Busticket.Models
         public int AsientoId { get; set; }
         public required Asiento Asiento { get; set; }
 
+        // 💰 PRECIO
         [Column(TypeName = "decimal(10,2)")]
         public decimal Precio { get; set; }
 
+        // 🗓 FECHA DE COMPRA
         public DateTime FechaCompra { get; set; }
 
+        // 🔑 CÓDIGO DE BOLETO
         public required string Codigo { get; set; }
     }
 }

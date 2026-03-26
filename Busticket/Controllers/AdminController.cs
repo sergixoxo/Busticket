@@ -4,7 +4,7 @@ using Busticket.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+    
 namespace Busticket.Controllers
 {
     [Authorize(Roles = "Admin")]
@@ -155,7 +155,7 @@ namespace Busticket.Controllers
         {
             // Traer la ruta con sus asientos
             var ruta = await _context.Ruta
-                .Include(r => r.Asiento)   // asientos de la ruta
+                .Include(r => r.Asientos)   // asientos de la ruta
                 .FirstOrDefaultAsync(r => r.RutaId == id);
 
             if (ruta == null) return NotFound();
@@ -164,7 +164,7 @@ namespace Busticket.Controllers
             // 1️⃣ Borrar boletos asociados a cada asiento
             // -----------------------------
             var boletos = _context.Boleto
-                .Where(b => ruta.Asiento.Select(a => a.AsientoId).Contains(b.AsientoId));
+                .Where(b => ruta.Asientos.Select(a => a.AsientoId).Contains(b.AsientoId));
             _context.Boleto.RemoveRange(boletos);
 
             // -----------------------------
@@ -176,8 +176,8 @@ namespace Busticket.Controllers
             // -----------------------------
             // 3️⃣ Borrar asientos
             // -----------------------------
-            if (ruta.Asiento != null && ruta.Asiento.Any())
-                _context.Asiento.RemoveRange(ruta.Asiento);
+            if (ruta.Asientos != null && ruta.Asientos.Any())
+                _context.Asiento.RemoveRange(ruta.Asientos);
 
             // -----------------------------
             // 4️⃣ Borrar la ruta

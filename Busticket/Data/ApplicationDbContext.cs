@@ -97,7 +97,7 @@ namespace Busticket.Data
             // ---------------- ASIENTO ----------------
             modelBuilder.Entity<Asiento>()
                 .HasOne(a => a.Ruta)
-                .WithMany(r => r.Asiento)
+                .WithMany(r => r.Asientos)
                 .HasForeignKey(a => a.RutaId)
                 .OnDelete(DeleteBehavior.Restrict);
 
