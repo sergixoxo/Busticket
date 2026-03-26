@@ -3,74 +3,75 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
-using Busticket.Services; // Asegúrate de tener este namespace
+using Busticket.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ===============================
-// 1. BASE DE DATOS
-// ===============================
+// ============================================================
+// 1. CONFIGURACIÓN DE SERVICIOS (Dependency Injection)
+// ============================================================
+
+// Base de Datos
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-// ===============================
-// 2. IDENTITY & COOKIES
-// ===============================
+// Identity (Autenticación y Roles)
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
-    options.Password.RequireDigit = false; // Ajuste opcional para facilitar pruebas
+    options.Password.RequireDigit = false;
     options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// Configuración de Cookies de Identity
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Auth/Login";
-    options.AccessDeniedPath = "/Auth/AccessDenied"; // Ruta recomendada
+    options.AccessDeniedPath = "/Auth/Login";
     options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
     options.SlidingExpiration = true;
-    options.Cookie.HttpOnly = true; // Seguridad extra
+    options.Cookie.HttpOnly = true;
 });
 
-// ===============================
-// 3. SERVICIOS ADICIONALES
-// ===============================
-builder.Services.AddAuthorization();
-builder.Services.AddControllersWithViews();
+// Sesión (Esencial para el Carrito de Compras)
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true; // Vital para que el carrito funcione en la nube
+    options.Cookie.IsEssential = true; // Forzar cookie incluso sin consentimiento previo
 });
 
-// Configuración de QuestPDF
-QuestPDF.Settings.License = LicenseType.Community;
+builder.Services.AddAuthorization();
+builder.Services.AddControllersWithViews();
 
-// Registro de servicios propios
+// Servicios de Terceros y Personalizados
+QuestPDF.Settings.License = LicenseType.Community;
 builder.Services.AddTransient<EmailService>();
 
 var app = builder.Build();
 
-// ===============================
-// 4. CONFIGURACIÓN DEL ENTORNO (PIPELINE)
-// ===============================
+// ============================================================
+// 2. CONFIGURACIÓN DEL PIPELINE (Middleware - EL ORDEN IMPORTA)
+// ============================================================
+
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error"); // Ruta estándar de error
+    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 
-// Configuración de tipos de archivo estáticos (GLB para modelos 3D, etc.)
+// Configuración de Archivos Estáticos y tipos MIME (GLB para modelos 3D)
 var provider = new FileExtensionContentTypeProvider();
 provider.Mappings[".glb"] = "model/gltf-binary";
 provider.Mappings[".json"] = "application/json";
@@ -81,22 +82,23 @@ app.UseStaticFiles(new StaticFileOptions
     ServeUnknownFileTypes = true
 });
 
-// --- ORDEN CRÍTICO DE MIDDLEWARES ---
 app.UseRouting();
 
-app.UseSession();        // 1. Primero la sesión
-app.UseAuthentication(); // 2. Luego quién es el usuario
-app.UseAuthorization();  // 3. Finalmente qué puede hacer
+// --- ORDEN CORRECTO DE AUTH Y SESIÓN ---
+app.UseSession();        // 1. Sesión disponible primero
+app.UseAuthentication(); // 2. Quién es el usuario
+app.UseAuthorization();  // 3. Qué puede hacer el usuario
 
-// ===============================
-// 5. RUTAS Y SEEDING
-// ===============================
+// ============================================================
+// 3. RUTAS Y SEMILLADO (Seeding)
+// ============================================================
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}"
 );
 
-// Ejecución de Seeders (Roles y Admin)
+// Inicializar Roles y Administrador automáticamente
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -106,9 +108,8 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        // Esto evita que la app truene si el seeder falla en el primer inicio
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Ocurrió un error al sembrar la base de datos.");
+        logger.LogError(ex, "Error al ejecutar el Seeder de Identity.");
     }
 }
 
