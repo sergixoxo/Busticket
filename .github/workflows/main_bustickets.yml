@@ -30,7 +30,7 @@ jobs:
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: net-app # Eliminé el punto inicial para evitar problemas de nombrado
+          name: net-app
           path: ./myapp
 
   deploy:
