@@ -42,7 +42,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-            
+          path: ./publish # Descargamos a una carpeta limpia llamada 'publish'
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -56,4 +57,4 @@ jobs:
         with:
           app-name: 'BusTickets'
           slot-name: 'Production'
-          package: .s
+          package: ./publish # Azure buscará los archivos dentro de la carpeta publish
