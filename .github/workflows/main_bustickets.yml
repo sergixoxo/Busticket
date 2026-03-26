@@ -25,14 +25,15 @@ jobs:
         run: dotnet build Busticket/Busticket.csproj --configuration Release --no-restore
 
       - name: dotnet publish
-        # Publicamos directamente en la carpeta 'publish'
-        run: dotnet publish Busticket/Busticket.csproj -c Release -o ./publish --no-self-contained
+        # Publicamos en una carpeta temporal 'out'
+        run: dotnet publish Busticket/Busticket.csproj -c Release -o ./out --no-self-contained
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: net-app
-          path: ./publish
+          # Al apuntar a la carpeta './out', GitHub la subirá correctamente
+          path: ./out
 
   deploy:
     runs-on: windows-latest
@@ -42,12 +43,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: net-app
-          path: ./artifact
+          # Descargamos el contenido directamente en el directorio actual
+          path: ./publish-folder
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'BusTickets'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./artifact
-          type: zip
+          # IMPORTANTE: Apuntamos a la carpeta. Azure se encargará de comprimirla al subir.
+          package: ./publish-folder
