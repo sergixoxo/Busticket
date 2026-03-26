@@ -1,4 +1,5 @@
-build:
+jobs:
+  build:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +30,7 @@ build:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-          path: ./to_deploy # Descarga en una subcarpeta
+          path: ./to_deploy
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -42,4 +43,4 @@ build:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'BusTickets'
-          package: ./to_deploy # Azure tomará el contenido de esta carpeta
+          package: ./to_deploy
