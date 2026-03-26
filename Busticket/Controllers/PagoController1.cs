@@ -12,7 +12,7 @@ using System.Security.Claims;
 using SkiaSharp;
 using QuestPDF.Drawing;
 using QRCoder;
-
+using Busticket.Services;
 namespace Busticket.Controllers
 {
     [Authorize]

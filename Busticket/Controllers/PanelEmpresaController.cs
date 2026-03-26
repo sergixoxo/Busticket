@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-
+using Busticket.DTOs;
 namespace Busticket.Controllers
 {
     [Authorize(Roles = "Empresa,Admin")]
