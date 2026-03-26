@@ -18,15 +18,15 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Restore dependencies
+        run: dotnet restore Busticket/Busticket.csproj
+
       - name: Build with dotnet
-        run: dotnet build Busticket/Busticket.csproj --configuration Release
+        run: dotnet build Busticket/Busticket.csproj --configuration Release --no-restore
 
       - name: dotnet publish
-        # Publicamos en una carpeta limpia llamada 'publish'
+        # Publicamos directamente en la carpeta 'publish'
         run: dotnet publish Busticket/Busticket.csproj -c Release -o ./publish --no-self-contained
-
-      - name: List files after publish
-        run: dir ./publish /s
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -44,13 +44,9 @@ jobs:
           name: net-app
           path: ./artifact
 
-      - name: List files to deploy
-        run: dir ./artifact /s
-
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'BusTickets'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          # Apuntamos a la carpeta correcta dentro del artifact
           package: ./artifact
