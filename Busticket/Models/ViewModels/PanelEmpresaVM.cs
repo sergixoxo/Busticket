@@ -4,7 +4,8 @@ namespace Busticket.Models.ViewModels
 {
     public class PanelEmpresaVM
     {
-        public Empresa Empresa { get; set; }
-        public List<Venta> Ventas { get; set; }
+        // ⚠️ Propiedades obligatorias
+        public required Empresa Empresa { get; set; }
+        public required List<Venta> Ventas { get; set; }
     }
 }
