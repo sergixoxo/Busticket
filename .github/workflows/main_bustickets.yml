@@ -20,11 +20,9 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build with dotnet
-        # Apuntamos específicamente al proyecto de la app
         run: dotnet build Busticket/Busticket.csproj --configuration Release
 
       - name: dotnet publish
-        # --no-self-contained reduce drásticamente el peso del archivo
         run: dotnet publish Busticket/Busticket.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp" --no-self-contained
 
       - name: Upload artifact for deployment job
@@ -33,7 +31,7 @@ jobs:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
 
-deploy:
+  deploy:
     runs-on: windows-latest
     needs: build
     permissions:
@@ -44,11 +42,9 @@ deploy:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-          # quitamos el espacio extra que había aquí abajo
-
+            
       - name: Login to Azure
         uses: azure/login@v2
-        # ... resto del código igual ...
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_AEC5DB626120413DB5695ECB97A38CD4 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_7C9B1F4CF7414F499A7DD63879672F9C }}
@@ -60,4 +56,4 @@ deploy:
         with:
           app-name: 'BusTickets'
           slot-name: 'Production'
-          package: .
+          package: .s
