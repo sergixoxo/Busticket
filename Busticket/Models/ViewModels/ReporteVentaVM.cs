@@ -1,13 +1,20 @@
-namespace Busticket.Models.ViewModels
+using Busticket.Models;
+using System.Collections.Generic;
+
+namespace Busticket.Models
 {
     public class ReporteVentaVM1
     {
-        // ⚠️ Propiedades obligatorias
-        public int VentaId { get; set; }
-        public required string Usuario { get; set; }
-        public required string Empresa { get; set; }
+        // ✅ Ruta siempre obligatoria
+        public required Ruta Ruta { get; set; }
 
-        public decimal Precio { get; set; }
-        public DateTime Fecha { get; set; }
+        // ✅ Lista inicializada para evitar null
+        public List<Asiento> Asientos { get; set; } = new List<Asiento>();
+
+        // Opcional, puede ser null
+        public string? RequestId { get; set; }
+
+        // Propiedad calculada
+        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
     }
 }

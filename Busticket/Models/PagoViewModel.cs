@@ -9,10 +9,7 @@ namespace Busticket.Models
         // COMPRA (OBLIGATORIO)
         // =========================
         public int RutaId { get; set; }
-
-        // ⚠️ Lista inicializada para evitar null
         public required List<string> Asientos { get; set; } = new();
-
         public decimal Total { get; set; }
 
         // =========================
@@ -33,7 +30,6 @@ namespace Busticket.Models
         public required string NumeroTarjeta { get; set; }
         public required string Validez { get; set; }
         public required string CVC { get; set; }
-
         public required string Descuento { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace Busticket.Models
 
         [ForeignKey("Empresa")]
         public int EmpresaId { get; set; }
-        public Empresa Empresa { get; set; }
+        public required Empresa Empresa { get; set; }
 
         public string? Placa { get; set; }
         public string? Modelo { get; set; }

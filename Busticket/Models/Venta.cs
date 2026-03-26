@@ -24,6 +24,6 @@ namespace Busticket.Models
         public DateTime Fecha { get; set; }
 
         // 🧾 Una venta tiene muchos boletos
-        public required ICollection<Boleto> Boletos { get; set; }
+        public required ICollection<Boleto> Boletos { get; set; } = new List<Boleto>();
     }
 }
