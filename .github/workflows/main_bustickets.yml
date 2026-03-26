@@ -40,7 +40,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-          path: ./to_deploy
+          path: ./to_deploy  # Descargamos todo aquí
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -55,4 +55,4 @@ jobs:
         with:
           app-name: 'BusTickets'
           slot-name: 'Production'
-          package: .net-app  
+          package: ./to_deploy  # IMPORTANTE: Ahora Azure busca dentro de la carpeta correctas
