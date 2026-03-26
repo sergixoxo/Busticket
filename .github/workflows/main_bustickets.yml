@@ -1,16 +1,5 @@
-name: Build and deploy ASP.Net Core app to Azure Web App - BusTickets
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-jobs:
-  build:
+build:
     runs-on: windows-latest
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -23,26 +12,24 @@ jobs:
         run: dotnet build Busticket/Busticket.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish Busticket/Busticket.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp" --no-self-contained
+        # Publicamos en una carpeta local llamada 'myapp'
+        run: dotnet publish Busticket/Busticket.csproj -c Release -o ./myapp --no-self-contained
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ./myapp
 
   deploy:
     runs-on: windows-latest
     needs: build
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-          path: ./publish # Descargamos a una carpeta limpia llamada 'publish'
+          path: ./to_deploy # Descarga en una subcarpeta
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -52,9 +39,7 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B2E7921EDDFE470ABEA23778262CEF6E }}
 
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'BusTickets'
-          slot-name: 'Production'
-          package: ./publish # Azure buscará los archivos dentro de la carpeta publish
+          package: ./to_deploy # Azure tomará el contenido de esta carpeta
