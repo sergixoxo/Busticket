@@ -25,7 +25,7 @@ jobs:
         run: dotnet build Busticket/Busticket.csproj --configuration Release --no-restore
 
       - name: dotnet publish
-        # Usamos --no-self-contained para que el archivo sea mucho más pequeño
+        # Mantenemos --no-self-contained para que pese mucho menos
         run: dotnet publish Busticket/Busticket.csproj -c Release -o ./out --no-self-contained
 
       - name: Upload artifact for deployment job
@@ -49,5 +49,6 @@ jobs:
         with:
           app-name: 'BusTickets'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          # Al estar WEBSITE_RUN_FROM_PACKAGE=1, Azure recibirá esto y lo tratará como el paquete de ejecución
           package: ./publish-folder
+          # ESTA LÍNEA ES CLAVE: Forza el método Zip para ahorrar espacio y evitar el Error 500
+          type: zip
