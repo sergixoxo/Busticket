@@ -1,3 +1,11 @@
+name: Build and deploy ASP.Net Core app to Azure Web App - BusTickets
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: windows-latest
@@ -13,7 +21,6 @@ jobs:
         run: dotnet build Busticket/Busticket.csproj --configuration Release
 
       - name: dotnet publish
-        # Publicamos en una carpeta local llamada 'myapp'
         run: dotnet publish Busticket/Busticket.csproj -c Release -o ./myapp --no-self-contained
 
       - name: Upload artifact for deployment job
@@ -25,6 +32,9 @@ jobs:
   deploy:
     runs-on: windows-latest
     needs: build
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
