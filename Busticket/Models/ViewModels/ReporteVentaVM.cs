@@ -1,7 +1,7 @@
 using Busticket.Models;
 using System.Collections.Generic;
 
-namespace Busticket.Models
+namespace Busticket.Models.ViewModels
 {
     public class ReporteVentaVM1
     {
