@@ -1,10 +1,14 @@
 using Busticket.Models;
+using System.Collections.Generic;
 
 namespace Busticket.Models.ViewModels
 {
     public class PanelEmpresaVM
     {
-        public Empresa Empresa { get; set; }
-        public List<Venta> Ventas { get; set; }
+        // ✅ Propiedad obligatoria
+        public required Empresa Empresa { get; set; }
+
+        // ✅ Lista inicializada para evitar null
+        public required List<Venta> Ventas { get; set; } = new();
     }
 }

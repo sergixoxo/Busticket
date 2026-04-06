@@ -1,6 +1,6 @@
 ﻿using Busticket.Data;
 using Microsoft.AspNetCore.Mvc;
-
+using Busticket.DTOs;
 namespace Busticket.Controllers
 {
     public class ItinerariosController : Controller

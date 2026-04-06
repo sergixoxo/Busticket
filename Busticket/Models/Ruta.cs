@@ -10,50 +10,48 @@ namespace Busticket.Models
         [Key]
         public int RutaId { get; set; }
 
-        // Ciudad Origen
+        // Ciudad Origen - El ID es el que realmente importa para la DB
         [Required]
         public int CiudadOrigenId { get; set; }
 
         [ForeignKey("CiudadOrigenId")]
         [ValidateNever]
-        public Ciudad CiudadOrigen { get; set; }
+        // ✅ Quitamos 'required' y usamos '?' para permitir que sea opcional en el código (C#)
+        public Ciudad? CiudadOrigen { get; set; }
 
         // Ciudad Destino
         [Required]
         public int CiudadDestinoId { get; set; }
-        [ValidateNever]
+
         [ForeignKey("CiudadDestinoId")]
-        public Ciudad CiudadDestino { get; set; }
+        [ValidateNever]
+        public Ciudad? CiudadDestino { get; set; }
 
         // Empresa
-
+        [Required]
         public int EmpresaId { get; set; }
 
         [ForeignKey("EmpresaId")]
         [ValidateNever]
-        public Empresa Empresa { get; set; }
+        public Empresa? Empresa { get; set; }
 
-        // Precio
         [Required]
         public decimal Precio { get; set; }
 
-        // Duración
         [Required]
         public int DuracionMin { get; set; }
 
-        // 🆕 FECHAS
-   
+        [DataType(DataType.DateTime)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
+        public DateTime FechaSalida { get; set; }
 
-[DataType(DataType.DateTime)]
-    [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
-    public DateTime FechaSalida { get; set; }
+        [DataType(DataType.DateTime)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
+        public DateTime FechaLlegada { get; set; }
 
-    [DataType(DataType.DateTime)]
-    [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm}", ApplyFormatInEditMode = true)]
-    public DateTime FechaLlegada { get; set; }
+        public string? ImagenUrl { get; set; }
 
-    public string? ImagenUrl { get; set; }
-
-        public List<Asiento>? Asiento { get; set; }
+        // Lista de asientos
+        public List<Asiento> Asientos { get; set; } = new List<Asiento>();
     }
 }

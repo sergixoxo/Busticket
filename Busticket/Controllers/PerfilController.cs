@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Busticket.Data;
 using Busticket.Models;
-
+using Busticket.DTOs;
 namespace Busticket.Controllers
 {
     public class PerfilController : Controller

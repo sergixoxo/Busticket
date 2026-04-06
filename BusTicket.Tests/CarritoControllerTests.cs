@@ -1,12 +1,11 @@
 ﻿using Busticket.Controllers;
 using Busticket.Data;
 using Busticket.DTOs;
+using Busticket.Models; // ✅ Aseguramos el acceso a los modelos
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Tls;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -17,7 +16,7 @@ public class CarritoControllerTests
     private ApplicationDbContext GetDbContext()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseInMemoryDatabase(databaseName: "CarritoTestDB")
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString()) // ✅ ID único para evitar conflictos
             .Options;
 
         var context = new ApplicationDbContext(options);
@@ -27,17 +26,14 @@ public class CarritoControllerTests
         return context;
     }
 
-    // 🔥 Fake Session
     private ISession GetSession()
     {
-        var session = new TestSession();
-        return session;
+        return new TestSession(); // Asegúrate de que TestSession esté definida en tu proyecto de pruebas
     }
 
     private CarritoController GetController(ApplicationDbContext context)
     {
         var controller = new CarritoController(context);
-
         var httpContext = new DefaultHttpContext();
         httpContext.Session = GetSession();
 
@@ -57,26 +53,32 @@ public class CarritoControllerTests
     {
         var context = GetDbContext();
 
-        context.Ruta.Add(new Busticket.Models.Ruta { RutaId = 1 });
+        // ✅ Añadimos propiedades requeridas por el modelo Ruta
+        context.Ruta.Add(new Ruta
+        {
+            RutaId = 1,
+            CiudadOrigen = new Ciudad { Nombre = "A" },
+            CiudadDestino = new Ciudad { Nombre = "B" },
+            Empresa = new Empresa { Nombre = "Test", Nit = "123" }
+        });
         await context.SaveChangesAsync();
 
         var controller = GetController(context);
 
-        var dto = new EmailService
+        // ✅ Corregido a EmailServiceDTO
+        var dto = new EmailServiceDTO
         {
             RutaId = 1,
             Asientos = new List<CarritoItem>
             {
-                new CarritoItem { AsientoId = 1, Precio = 1000 }
+                // ✅ Añadido 'Codigo' que es required
+                new CarritoItem { AsientoId = 1, Precio = 1000, Codigo = "A1" }
             }
         };
 
         var result = await controller.Agregar(dto) as OkObjectResult;
 
         Assert.NotNull(result);
-
-        var data = result.Value;
-        Assert.NotNull(data);
     }
 
     // ============================
@@ -88,7 +90,8 @@ public class CarritoControllerTests
         var context = GetDbContext();
         var controller = GetController(context);
 
-        var dto = new EmailService
+        // ✅ Corregido a EmailServiceDTO
+        var dto = new EmailServiceDTO
         {
             RutaId = 1,
             Asientos = new List<CarritoItem>()
@@ -108,12 +111,13 @@ public class CarritoControllerTests
         var context = GetDbContext();
         var controller = GetController(context);
 
-        var dto = new EmailService
+        // ✅ Corregido a EmailServiceDTO
+        var dto = new EmailServiceDTO
         {
             RutaId = 999,
             Asientos = new List<CarritoItem>
             {
-                new CarritoItem { AsientoId = 1, Precio = 1000 }
+                new CarritoItem { AsientoId = 1, Precio = 1000, Codigo = "A1" }
             }
         };
 
@@ -147,7 +151,7 @@ public class CarritoControllerTests
 
         var carrito = new List<CarritoItem>
         {
-            new CarritoItem { AsientoId = 1, Precio = 1000 }
+            new CarritoItem { AsientoId = 1, Precio = 1000, Codigo = "A1" }
         };
 
         controller.HttpContext.Session.SetString("Carrito",

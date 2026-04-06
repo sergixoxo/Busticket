@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-
+using Busticket.DTOs;
 namespace Busticket.Controllers
 {
     public class ErrorController : Controller

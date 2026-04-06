@@ -5,7 +5,6 @@
     Layout = null;
 }
 
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -16,8 +15,6 @@
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
-    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
     <style>
         @@keyframes fadeUp {
@@ -40,278 +37,205 @@
 
 <body class="bg-[#f7f8fa] text-gray-800">
 
-    <!-- HEADER -->
+    <!-- ================= HEADER ================= -->
     <header class="absolute top-0 inset-x-0 z-50">
-        <div class="max-w-7xl mx-auto px-10 py-6
-                flex items-center justify-between
-                text-black">
+        <div class="max-w-7xl mx-auto px-10 py-6 flex items-center justify-between text-black">
 
-            <!-- IZQUIERDA -->
             <div class="flex items-center gap-6">
-
-                <!-- BOTÓN VOLVER -->
                 @if (Context.Request.Path != "/Home/Index")
                 {
                     <button onclick="history.back()"
-                            class="flex items-center gap-2 text-sm tracking-widest uppercase
-                                   opacity-80 hover:opacity-100 transition group">
-
-                        <!-- ICONO FLECHA SVG -->
-                        <svg xmlns="http://www.w3.org/2000/svg"
-                             class="w-5 h-5 transform group-hover:-translate-x-1 transition duration-300"
-                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M15 19l-7-7 7-7" />
-                        </svg>
-
-                        Volver
+                            class="flex items-center gap-2 text-sm uppercase opacity-80 hover:opacity-100">
+                        ← Volver
                     </button>
                 }
 
-                <!-- LOGO -->
-                <a href="/Home/Index"
-                   class="text-2xl tracking-widest uppercase font-semibold">
+                <a href="/Home/Index" class="text-2xl uppercase font-semibold">
                     Busticket
                 </a>
-
             </div>
 
-            <!-- DERECHA -->
-            <div class="flex gap-10 text-sm tracking-widest uppercase items-center">
-
-                <!-- AYUDA -->
-                <a href="/Ayuda"
-                   class="relative
-                      after:content-[''] after:absolute after:left-0 after:-bottom-1
-                      after:w-0 after:h-[1px] after:bg-black
-                      after:transition-all after:duration-300
-                      hover:after:w-full">
-                    Ayuda
-                </a>
+            <div class="flex gap-6 text-sm uppercase items-center">
+                <a href="/Ayuda">Ayuda</a>
 
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
-                    <!-- PERFIL -->
-                    <a href="/Perfil"
-                       title="Mi cuenta"
-                       class="flex items-center justify-center w-10 h-10
-                              rounded-full border border-black
-                              hover:bg-black hover:text-white transition">
-                        👤
-                    </a>
+                    <a href="/Perfil">👤</a>
 
-                    <!-- LOGOUT -->
-                    <form asp-controller="Auth"
-                          asp-action="Logout"
-                          method="post"
-                          class="inline">
-                        <button type="submit"
-                                class="relative
-                                       after:content-[''] after:absolute after:left-0 after:-bottom-1
-                                       after:w-0 after:h-[1px] after:bg-black
-                                       after:transition-all after:duration-300
-                                       hover:after:w-full">
-                            Cerrar sesión
-                        </button>
+                    <form asp-controller="Auth" asp-action="Logout" method="post">
+                        <button type="submit">Salir</button>
                     </form>
                 }
                 else
                 {
-                    <!-- LOGIN -->
-                    <a href="/Auth/Login"
-                       class="relative
-                              after:content-[''] after:absolute after:left-0 after:-bottom-1
-                              after:w-0 after:h-[1px] after:bg-black
-                              after:transition-all after:duration-300
-                              hover:after:w-full">
-                        Iniciar sesión
-                    </a>
+                    <a href="/Auth/Login">Login</a>
                 }
-
-                @if (User.IsInRole("Admin"))
-                {
-                    <a href="/Admin/Index"
-                       class="relative
-                              after:content-[''] after:absolute after:left-0 after:-bottom-1
-                              after:w-0 after:h-[1px] after:bg-black
-                              after:transition-all after:duration-300
-                              hover:after:w-full">
-                        Admin
-                    </a>
-                }
-
-                @if (User.IsInRole("Empresa"))
-                {
-                    <a href="/Empresa/Dashboard"
-                       class="relative
-                              after:content-[''] after:absolute after:left-0 after:-bottom-1
-                              after:w-0 after:h-[1px] after:bg-black
-                              after:transition-all after:duration-300
-                              hover:after:w-full">
-                        Empresa
-                    </a>
-                }
-
             </div>
         </div>
     </header>
-    <!-- ================= CONTENIDO ================= -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12
-             grid grid-cols-1 lg:grid-cols-[280px_1fr_360px] gap-8">
 
-        <!-- ========== FILTROS ========== -->
-        <aside class="fade-up lg:sticky lg:top-24 order-1">
-            <div class="bg-white/90 backdrop-blur rounded-2xl p-6 shadow-sm">
-                <h2 class="text-xs uppercase tracking-widest text-gray-500 mb-6">
-                    Filtros
-                </h2>
+    <!-- ================= MAIN ================= -->
+    <main class="max-w-7xl mx-auto px-4 pt-20 pb-12">
 
-                <form method="get" action="/Rutas/Listado" class="space-y-5">
+        <!-- BOTÓN MOBILE -->
+        <button onclick="toggleFilters()"
+                class="lg:hidden fixed top-5 left-5 z-50 bg-black text-white p-3 rounded-full">
+            ☰
+        </button>
 
-                    <div>
-                        <label class="text-xs uppercase text-gray-400">Desde</label>
-                        <select name="origen"
-                                class="mt-1 w-full rounded-lg border-gray-200 text-sm">
-                            <option value="">Todas</option>
-                            @foreach (var c in Model.Select(r => r.CiudadOrigen).Distinct())
-                            {
-                                <option value="@c.Nombre">@c.Nombre</option>
-                            }
-                        </select>
-                    </div>
+        <!-- ================= MOBILE ================= -->
+        <div class="lg:hidden flex flex-col gap-6">
 
-                    <div>
-                        <label class="text-xs uppercase text-gray-400">Hasta</label>
-                        <select name="destino"
-                                class="mt-1 w-full rounded-lg border-gray-200 text-sm">
-                            <option value="">Todas</option>
-                            @foreach (var c in Model.Select(r => r.CiudadDestino).Distinct())
-                            {
-                                <option value="@c.Nombre">@c.Nombre</option>
-                            }
-                        </select>
-                    </div>
+            <!-- FILTROS -->
+            <aside id="filtersPanel"
+                   class="fixed top-0 left-0 h-full w-72 bg-white z-40
+               transform -translate-x-full transition duration-300 p-4">
 
-                    <div>
-                        <label class="text-xs uppercase text-gray-400">Fecha de salida</label>
-                        <input type="date"
-                               name="fechaSalida"
-                               min="@DateTime.Now.ToString("yyyy-MM-dd")"
-                               class="mt-1 w-full rounded-lg border-gray-200 text-sm" />
-                    </div>
+                <h2 class="mb-4 font-bold">Filtros</h2>
 
-                    <div>
-                        <label class="text-xs uppercase text-gray-400">Fecha de llegada</label>
-                        <input type="date"
-                               name="fechaLlegada"
-                               min="@DateTime.Now.ToString("yyyy-MM-dd")"
-                               class="mt-1 w-full rounded-lg border-gray-200 text-sm" />
-                    </div>
+                <form method="get" action="/Rutas/Listado" class="space-y-3">
 
-                    <button class="w-full mt-4 py-2 rounded-full bg-gray-900 text-white text-sm
-                               hover:bg-black transition">
-                        Aplicar filtros
+                    <select name="origen" class="w-full border p-2 rounded">
+                        <option value="">Origen</option>
+                        @foreach (var c in Model.Select(r => r.CiudadOrigen).Distinct())
+                        {
+                            <option>@c.Nombre</option>
+                        }
+                    </select>
+
+                    <select name="destino" class="w-full border p-2 rounded">
+                        <option value="">Destino</option>
+                        @foreach (var c in Model.Select(r => r.CiudadDestino).Distinct())
+                        {
+                            <option>@c.Nombre</option>
+                        }
+                    </select>
+
+                    <button class="w-full bg-black text-white p-2 rounded">
+                        Filtrar
                     </button>
                 </form>
-            </div>
-        </aside>
+            </aside>
 
-        <!-- ========== LISTADO DE RUTAS ========== -->
-        <section class="fade-up order-2">
+            <!-- RUTAS MOBILE -->
+            @foreach (var ruta in Model)
+            {
+                <div class="bg-white p-4 rounded-xl shadow"
+                     onclick="location.href='/Rutas/Info/@ruta.RutaId'">
 
-            <h3 class="text-xs uppercase tracking-widest text-gray-500 mb-6">
-                @Model.Count rutas disponibles
-            </h3>
+                    <img src="@(string.IsNullOrEmpty(ruta.ImagenUrl)
+                                             ? $"https://picsum.photos/seed/{ruta.RutaId}/300/200"
+                                             : ruta.ImagenUrl)"
+                         class="w-full h-40 object-cover rounded mb-2" />
 
-            <div class="flex flex-col gap-6 max-h-[70vh] lg:max-h-[75vh] overflow-y-auto pr-1">
+                    <p class="font-bold">
+                        @ruta.CiudadOrigen?.Nombre → @ruta.CiudadDestino?.Nombre
+                    </p>
 
-                @foreach (var ruta in Model)
-                {
-                    <article class="group bg-white rounded-2xl p-4 sm:p-5 shadow-sm
-                   transition-all duration-300 hover:shadow-xl hover:-translate-y-1
-                   cursor-pointer"
-                             data-id="@ruta.RutaId"
-                             data-origen-lat="@ruta.CiudadOrigen?.Lat"
-                             data-origen-lng="@ruta.CiudadOrigen?.Lng"
-                             data-destino-lat="@ruta.CiudadDestino?.Lat"
-                             data-destino-lng="@ruta.CiudadDestino?.Lng"
-                             onclick="location.href='/Rutas/Info/@ruta.RutaId'">
+                    <p class="text-sm text-gray-500">
+                        @ruta.Empresa?.Nombre
+                    </p>
 
-                        <div class="flex flex-col sm:flex-row gap-4 sm:gap-5 sm:items-center">
+                    <p class="font-bold mt-2">
+                        $@ruta.Precio.ToString("N0") COP
+                    </p>
+                </div>
+            }
+        </div>
 
-                            <img src="@(string.IsNullOrEmpty(ruta.ImagenUrl)
-                                                     ? $"https://picsum.photos/seed/{ruta.RutaId}/300/200"
-                                                     : ruta.ImagenUrl)"
-                                 class="w-full sm:w-36 h-40 sm:h-24 rounded-xl object-cover
-                        transition-transform duration-500 group-hover:scale-105" />
+        <!-- ================= DESKTOP ================= -->
+        <div class="hidden lg:grid grid-cols-[280px_1fr_360px] gap-8">
 
-                            <div class="flex-grow">
-                                <p class="font-semibold text-gray-900">
-                                    @ruta.CiudadOrigen?.Nombre — @ruta.CiudadDestino?.Nombre
-                                </p>
+            <!-- FILTROS -->
+            <aside class="fade-up">
+                <div class="bg-white rounded-2xl p-6 shadow-sm">
 
-                                <p class="text-sm text-gray-500">
-                                    @ruta.Empresa?.Nombre · @ruta.DuracionMin min
-                                </p>
+                    <h2 class="text-xs uppercase text-gray-500 mb-6">Filtros</h2>
 
-                                <p class="text-xs text-gray-400">
-                                    Salida: @ruta.FechaSalida.ToString("dd/MM/yyyy HH:mm")
-                                </p>
+                    <form method="get" action="/Rutas/Listado" class="space-y-5">
 
-                                <p class="text-xs text-gray-400">
-                                    Llegada: @ruta.FechaLlegada.ToString("dd/MM/yyyy HH:mm")
-                                </p>
+                        <select name="origen" class="w-full rounded-lg border-gray-200 text-sm">
+                            <option value="">Desde</option>
+                            @foreach (var c in Model.Select(r => r.CiudadOrigen).Distinct())
+                            {
+                                <option>@c.Nombre</option>
+                            }
+                        </select>
+
+                        <select name="destino" class="w-full rounded-lg border-gray-200 text-sm">
+                            <option value="">Hasta</option>
+                            @foreach (var c in Model.Select(r => r.CiudadDestino).Distinct())
+                            {
+                                <option>@c.Nombre</option>
+                            }
+                        </select>
+
+                        <button class="w-full py-2 rounded-full bg-black text-white">
+                            Aplicar
+                        </button>
+                    </form>
+                </div>
+            </aside>
+
+            <!-- RUTAS (TU DISEÑO ORIGINAL) -->
+            <section class="fade-up">
+
+                <div class="flex flex-col gap-6 max-h-[70vh] overflow-y-auto">
+
+                    @foreach (var ruta in Model)
+                    {
+                        <article class="group bg-white rounded-2xl p-5 shadow-sm
+                            hover:shadow-2xl hover:-translate-y-2 transition cursor-pointer border"
+                                 onclick="location.href='/Rutas/Info/@ruta.RutaId'">
+
+                            <div class="flex gap-4 items-center">
+
+                                <img src="@(string.IsNullOrEmpty(ruta.ImagenUrl)
+                                                                     ? $"https://picsum.photos/seed/{ruta.RutaId}/300/200"
+                                                                     : ruta.ImagenUrl)"
+                                     class="w-28 h-20 rounded-xl object-cover" />
+
+                                <div class="flex-grow">
+                                    <p class="font-semibold">
+                                        @ruta.CiudadOrigen?.Nombre — @ruta.CiudadDestino?.Nombre
+                                    </p>
+
+                                    <p class="text-sm text-gray-500">
+                                        @ruta.Empresa?.Nombre · @ruta.DuracionMin min
+                                    </p>
+                                </div>
+
+                                <div class="text-right">
+                                    <p class="font-bold">$@ruta.Precio.ToString("N0")</p>
+                                    <p class="text-xs text-gray-400">COP</p>
+                                </div>
+
                             </div>
+                        </article>
+                    }
+                </div>
+            </section>
 
-                            <div class="sm:text-right">
-                                <p class="text-lg font-semibold text-gray-900">
-                                    $@ruta.Precio.ToString("N0")
-                                </p>
+            <!-- MAPA -->
+            <aside>
+                <div id="map" class="w-full h-[360px] rounded-2xl"></div>
+            </aside>
 
-                                <p class="text-xs text-gray-400">COP</p>
-                            </div>
-
-                        </div>
-                    </article>
-                }
-            </div>
-        </section>
-
-        <!-- ========== MAPA ========== -->
-        <aside class="fade-up order-3 lg:sticky lg:top-24">
-            <div id="map"
-                 class="w-full h-[300px] sm:h-[400px] lg:h-[360px] rounded-2xl shadow-sm">
-            </div>
-        </aside>
+        </div>
 
     </main>
 
-    <!-- ================= MAPA ================= -->
+    <!-- ================= JS ================= -->
     <script>
+        function toggleFilters() {
+            document.getElementById("filtersPanel")
+                .classList.toggle("-translate-x-full");
+        }
+
         var map = L.map('map').setView([4.6, -74.1], 6);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        var routingControl = null;
-
-        document.querySelectorAll('[data-id]').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                const oLat = parseFloat(card.dataset.origenLat);
-                const oLng = parseFloat(card.dataset.origenLng);
-                const dLat = parseFloat(card.dataset.destinoLat);
-                const dLng = parseFloat(card.dataset.destinoLng);
-
-                if (routingControl) map.removeControl(routingControl);
-
-                routingControl = L.Routing.control({
-                    waypoints: [L.latLng(oLat, oLng), L.latLng(dLat, dLng)],
-                    addWaypoints: false,
-                    draggableWaypoints: false,
-                    show: false
-                }).addTo(map);
-
-                map.fitBounds([[oLat, oLng], [dLat, dLng]]);
-            });
-        });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+            .addTo(map);
     </script>
 
 </body>

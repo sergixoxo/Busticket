@@ -12,9 +12,7 @@ using System.Security.Claims;
 using SkiaSharp;
 using QuestPDF.Drawing;
 using QRCoder;
-
-
-
+using Busticket.Services;
 namespace Busticket.Controllers
 {
     [Authorize]
@@ -33,8 +31,8 @@ namespace Busticket.Controllers
         public IActionResult Index()
         {
             var carrito = HttpContext.Session
-      .GetObjectFromJson<List<CarritoItem>>("Carrito")
-      ?? new List<CarritoItem>();
+                .GetObjectFromJson<List<CarritoItem>>("Carrito")
+                ?? new List<CarritoItem>();
 
             if (!carrito.Any())
                 return RedirectToAction("Index", "Home");
@@ -60,11 +58,15 @@ namespace Busticket.Controllers
                 Empresa = primerAsiento.Ruta.Empresa.Nombre,
                 Duracion = primerAsiento.Ruta.DuracionMin + " min",
                 Fecha = DateTime.Now.ToString("dd/MM/yyyy"),
-                Hora = "00:00"
+                Hora = "00:00",
+                // ⚠️ Inicializamos propiedades required
+                Nombre = "",
+                NumeroTarjeta = "",
+                Validez = "",
+                CVC = "",
+                Descuento = "0"
             });
-
         }
-
 
         // =========================
         // POST: /Pago/FinalizarPago
@@ -86,7 +88,7 @@ namespace Busticket.Controllers
             if (string.IsNullOrEmpty(userId))
                 return RedirectToAction("Login", "Auth");
 
-            // 🔹 Convertir asientos string → int (CORRECTO)
+            // 🔹 Convertir asientos string → int
             var asientosIds = model.Asientos
                 .Select(a => int.TryParse(a, out int id) ? id : 0)
                 .Where(id => id > 0)
@@ -127,7 +129,12 @@ namespace Busticket.Controllers
                     Total = model.Total,
                     RutaId = ruta.RutaId,
                     EmpresaId = ruta.EmpresaId,
-                    UserId = userId
+                    UserId = userId,
+                    // ⚠️ Inicializamos required para evitar errores
+                    User = null!,
+                    Ruta = null!,
+                    Empresa = null!,
+                    Boletos = new List<Boleto>()
                 };
 
                 _context.Venta.Add(venta);
@@ -148,9 +155,13 @@ namespace Busticket.Controllers
                     _context.Boleto.Add(new Boleto
                     {
                         VentaId = venta.VentaId,
+                        Venta = venta,
                         UserId = userId,
+                        User = null!,
                         RutaId = ruta.RutaId,
+                        Ruta = null!,
                         AsientoId = asiento.AsientoId,
+                        Asiento = asiento,
                         Precio = ruta.Precio,
                         FechaCompra = DateTime.Now,
                         Codigo = $"BT-{Guid.NewGuid():N}".Substring(0, 10).ToUpper()
@@ -171,17 +182,13 @@ namespace Busticket.Controllers
             HttpContext.Session.Remove("Carrito");
             HttpContext.Session.Remove("Total");
 
-            // ✅ REDIRECCIÓN CORRECTA
+            // ✅ REDIRECCIÓN
             return RedirectToAction(
                 "ConfirmacionPago",
                 "Pago",
                 new { ventaId = venta.VentaId }
             );
         }
-
-    
-
-
 
         // =========================
         // GET: /Pago/ConfirmacionPago
@@ -218,10 +225,10 @@ namespace Busticket.Controllers
             // 🔹 Links aleatorios
             var instagramLinks = new[]
             {
-        "https://www.instagram.com/itsadanba",
-        "https://www.instagram.com/sergixoxo",
-        "https://www.instagram.com/jacomu_ssi"
-    };
+                "https://www.instagram.com/itsadanba",
+                "https://www.instagram.com/sergixoxo",
+                "https://www.instagram.com/jacomu_ssi"
+            };
 
             var instagramRandom = instagramLinks[new Random().Next(instagramLinks.Length)];
 
@@ -280,7 +287,7 @@ namespace Busticket.Controllers
                             .Text("Escanea el QR")
                             .FontSize(10);
 
-                        // QR ✅ CORRECTO
+                        // QR ✅
                         col.Item()
                             .AlignCenter()
                             .Width(120)
@@ -306,14 +313,14 @@ namespace Busticket.Controllers
                 venta.User.Email,
                 "🎫 Tu boleto de viaje - Busticket",
                 $@"
-        <h3>¡Gracias por tu compra!</h3>
-        <p><b>Empresa:</b> {venta.Ruta.Empresa.Nombre}</p>
-        <p><b>Asientos:</b> {string.Join(", ", venta.Boletos.Select(b => b.Asiento.Numero))}</p>
-        <p><b>Total:</b> {venta.Total:N0} COP</p>
-        <p>Adjunto encontrarás tu boleto en PDF con el código QR.</p>
-        <br/>
-        <small>Busticket © {DateTime.Now.Year}</small>
-    ",
+                <h3>¡Gracias por tu compra!</h3>
+                <p><b>Empresa:</b> {venta.Ruta.Empresa.Nombre}</p>
+                <p><b>Asientos:</b> {string.Join(", ", venta.Boletos.Select(b => b.Asiento.Numero))}</p>
+                <p><b>Total:</b> {venta.Total:N0} COP</p>
+                <p>Adjunto encontrarás tu boleto en PDF con el código QR.</p>
+                <br/>
+                <small>Busticket © {DateTime.Now.Year}</small>
+            ",
                 bytes,
                 $"Boleto_{venta.VentaId}.pdf"
             );

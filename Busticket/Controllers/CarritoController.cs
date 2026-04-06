@@ -1,9 +1,11 @@
 ﻿using Busticket.Data;
 using Busticket.DTOs;
 using Busticket.Extensions;
+using Busticket.Models; // ✅ Aseguramos que use los modelos
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Busticket.Services;
 
 namespace Busticket.Controllers
 {
@@ -17,13 +19,9 @@ namespace Busticket.Controllers
             _context = context;
         }
 
-        // ===============================
-        // POST: /Carrito/Agregar
-        // 👉 NO requiere login
-        // ===============================
         [HttpPost("Agregar")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Agregar([FromBody] EmailService dto)
+        public async Task<IActionResult> Agregar([FromBody] EmailServiceDTO dto)
         {
             if (dto == null || dto.Asientos == null || !dto.Asientos.Any())
             {
@@ -38,6 +36,7 @@ namespace Busticket.Controllers
                 return BadRequest(new { mensaje = "Ruta no encontrada." });
             }
 
+            // ✅ Usamos 'var' para que C# infiera el tipo correcto de la sesión
             var carrito = HttpContext.Session
                 .GetObjectFromJson<List<CarritoItem>>("Carrito")
                 ?? new List<CarritoItem>();
@@ -63,10 +62,6 @@ namespace Busticket.Controllers
             });
         }
 
-        // ===============================
-        // GET: /Carrito
-        // 👉 SÍ requiere login
-        // ===============================
         [Authorize]
         [HttpGet("")]
         public IActionResult Index()
@@ -79,14 +74,12 @@ namespace Busticket.Controllers
             return View(carrito);
         }
 
-
-
-
         [HttpPost("Eliminar")]
-        [IgnoreAntiforgeryToken]  // 🔹 desactiva la validación solo para JSON fetch
+        [IgnoreAntiforgeryToken]
         public IActionResult Eliminar([FromBody] EliminarAsientoRequest request)
         {
-            var carrito = HttpContext.Session.GetObjectFromJson<List<CarritoItem>>("Carrito") ?? new List<CarritoItem>();
+            var carrito = HttpContext.Session.GetObjectFromJson<List<CarritoItem>>("Carrito")
+                          ?? new List<CarritoItem>();
 
             var item = carrito.FirstOrDefault(c => c.AsientoId == request.AsientoId);
             if (item != null)
@@ -106,8 +99,4 @@ namespace Busticket.Controllers
             public int AsientoId { get; set; }
         }
     }
-
 }
-
-
-

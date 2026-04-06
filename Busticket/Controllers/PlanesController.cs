@@ -1,7 +1,7 @@
 using Busticket.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using Busticket.DTOs;
 namespace Busticket.Controllers
 {
     public class PlanesController : Controller
