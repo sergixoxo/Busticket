@@ -45,18 +45,20 @@ namespace Busticket.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Crear(Empresa empresa)
         {
+            ModelState.Remove("UserId");
+            ModelState.Remove("User");
+
             if (!ModelState.IsValid)
                 return View(empresa);
 
-            // 🔑 ASIGNAR USUARIO LOGUEADO
             empresa.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            empresa.FechaRegistro = DateTime.Now;
 
             _context.Empresa.Add(empresa);
             await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
-
         // ===============================
         // EDITAR
         // ===============================
